@@ -13,7 +13,7 @@ export default function App() {
     const [wasmError, setWasmError] = useState<string | null>(null)
     const wasmRef = useRef<EdgeRulesMod | null>(null)
     const [examples, setExamples] = useState<Example[]>(
-        BASE_EXAMPLES.map((e): Example => ({...e, input: e.initial, output: '', error: null}))
+        BASE_EXAMPLES.map((e): Example => ({...e, input: e.codeExample, output: '', error: null}))
     )
 
     const highlight = useMemo<((codeStr: string) => string)>(() => (codeStr: string) => {

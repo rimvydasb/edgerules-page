@@ -2,7 +2,7 @@ export type BaseExample = {
     id: string
     title: string
     description: string
-    initial: string
+    codeExample: string
 }
 
 export type Example = BaseExample & {
