@@ -309,14 +309,6 @@ pre {
     min-width: 0;
 }
 
-.example-output .output {
-    min-height: 160px;
-}
-
-.example-editor .editor {
-    min-height: 160px;
-}
-
 .example-title {
     margin: 0 0 6px;
     font-size: 14px;

@@ -1,10 +1,23 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import 'prismjs/components/prism-javascript'
 // Using custom bright theme styles in src/styles.css
 
-const EXAMPLES = [
+type BaseExample = {
+  id: string
+  title: string
+  description: string
+  initial: string
+}
+
+type Example = BaseExample & {
+  input: string
+  output: string
+  error: string | null
+}
+
+const EXAMPLES: BaseExample[] = [
     {
         id: 'ex1',
         title: 'Example 1',
@@ -26,27 +39,29 @@ const EXAMPLES = [
 ]
 
 export default function App() {
-    const [lang] = useState('javascript')
+    const [lang] = useState<'javascript'>('javascript')
     const [wasmReady, setWasmReady] = useState(false)
-    const [wasmError, setWasmError] = useState(null)
-    const wasmRef = useRef(null)
-    const [examples, setExamples] = useState(
-        EXAMPLES.map(e => ({...e, input: e.initial, output: '', error: null}))
+    const [wasmError, setWasmError] = useState<string | null>(null)
+    const wasmRef = useRef<EdgeRulesMod | null>(null)
+    const [examples, setExamples] = useState<Example[]>(
+        EXAMPLES.map((e): Example => ({ ...e, input: e.initial, output: '', error: null }))
     )
 
-    const highlight = useMemo(() => (codeStr) => {
+    const highlight = useMemo<((codeStr: string) => string)>(() => (codeStr: string) => {
         try {
-            return Prism.highlight(codeStr, Prism.languages[lang], lang)
-        } catch (e) {
+            // Use explicit language name with safe grammar access
+            const grammar = Prism.languages['javascript'] as Prism.Grammar
+            return Prism.highlight(codeStr, grammar, 'javascript')
+        } catch {
             return codeStr
         }
-    }, [lang])
+    }, [])
 
     // Access WASM module exposed via index.html module script as window.__edgeRules
     useEffect(() => {
         let cancelled = false
 
-        const attach = async (mod) => {
+        const attach = async (mod: EdgeRulesMod) => {
             const ok = await mod.ready
             if (!ok) throw new Error('EdgeRules WASM failed to initialize')
             if (!cancelled) {
@@ -57,52 +72,52 @@ export default function App() {
 
         const onReady = () => {
             if (!cancelled && window.__edgeRules) {
-                attach(window.__edgeRules).catch(e => setWasmError(e?.message || String(e)))
+                attach(window.__edgeRules).catch((e: unknown) => setWasmError((e as Error)?.message || String(e)))
             }
         }
-        const onError = (e) => {
+        const onError = (e: CustomEvent<{ error?: Error }>) => {
             if (!cancelled) setWasmError(e?.detail?.error?.message || 'WASM loader error')
         }
 
         if (window.__edgeRules) {
-            attach(window.__edgeRules).catch(e => setWasmError(e?.message || String(e)))
+            attach(window.__edgeRules).catch((e: unknown) => setWasmError((e as Error)?.message || String(e)))
         } else {
-            window.addEventListener('edgerules-ready', onReady, {once: true})
-            window.addEventListener('edgerules-error', onError, {once: true})
+            window.addEventListener('edgerules-ready', onReady as EventListener, { once: true })
+            window.addEventListener('edgerules-error', onError as EventListener, { once: true })
         }
 
         return () => {
             cancelled = true
-            window.removeEventListener('edgerules-ready', onReady)
-            window.removeEventListener('edgerules-error', onError)
+            window.removeEventListener('edgerules-ready', onReady as EventListener)
+            window.removeEventListener('edgerules-error', onError as EventListener)
         }
     }, [])
 
     // Recompute outputs when WASM becomes ready
     useEffect(() => {
         if (!wasmReady || !wasmRef.current) return
-        const {to_trace} = wasmRef.current
+        const { to_trace } = wasmRef.current
         setExamples(prev => prev.map(ex => {
             try {
                 const out = to_trace(ex.input)
-                return {...ex, output: out, error: null}
+                return { ...ex, output: out, error: null }
             } catch (err) {
-                return {...ex, output: '', error: err?.message || String(err)}
+                return { ...ex, output: '', error: (err as Error)?.message || String(err) }
             }
         }))
     }, [wasmReady])
 
-    const onChangeExample = (id, value) => {
-        setExamples(prev => prev.map(ex => ex.id === id ? {...ex, input: value} : ex))
+    const onChangeExample = (id: string, value: string) => {
+        setExamples(prev => prev.map(ex => ex.id === id ? { ...ex, input: value } : ex))
         if (wasmRef.current) {
             try {
                 const out = wasmRef.current.to_trace(value)
-                setExamples(prev => prev.map(ex => ex.id === id ? {...ex, output: out, error: null} : ex))
+                setExamples(prev => prev.map(ex => ex.id === id ? { ...ex, output: out, error: null } : ex))
             } catch (err) {
                 setExamples(prev => prev.map(ex => ex.id === id ? {
                     ...ex,
                     output: '',
-                    error: err?.message || String(err)
+                    error: (err as Error)?.message || String(err)
                 } : ex))
             }
         }
