@@ -3,25 +3,9 @@ import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import 'prismjs/components/prism-javascript'
 // Using custom bright theme styles in src/styles.css
-
-type BaseExample = {
-    id: string
-    title: string
-    description: string
-    initial: string
-}
-
-type Example = BaseExample & {
-    input: string
-    output: string
-    error: string | null
-}
-
-const EXAMPLES: BaseExample[] = [
-    {id: 'ex1', title: 'Example 1', description: 'Basic arithmetic', initial: '{ value : 10 + 20 }'},
-    {id: 'ex2', title: 'Example 2', description: 'Aggregate sum', initial: '{ total : sum([1,2,3]) }'},
-    {id: 'ex3', title: 'Example 3', description: 'Refs and expressions', initial: '{ a : 1; b : a + 2 }'}
-]
+import Footer from './components/Footer'
+import type { BaseExample, Example } from './examples/types'
+import { BASE_EXAMPLES } from './examples'
 
 export default function App() {
     const [lang] = useState<'javascript'>('javascript')
@@ -29,7 +13,7 @@ export default function App() {
     const [wasmError, setWasmError] = useState<string | null>(null)
     const wasmRef = useRef<EdgeRulesMod | null>(null)
     const [examples, setExamples] = useState<Example[]>(
-        EXAMPLES.map((e): Example => ({...e, input: e.initial, output: '', error: null}))
+        BASE_EXAMPLES.map((e): Example => ({...e, input: e.initial, output: '', error: null}))
     )
 
     const highlight = useMemo<((codeStr: string) => string)>(() => (codeStr: string) => {
@@ -176,58 +160,7 @@ export default function App() {
                 </div>
             </div>
 
-            <footer className="footer">
-                <div className="footer__inner">
-                    <div className="footer__grid">
-                        <div className="footer__col">
-                            <div className="footer__title">About</div>
-                            <ul className="footer__list">
-                                <li>
-                                    <a className="footer__link" href="https://rimvydasb.github.io/edgerules-page/"
-                                       target="_blank" rel="noopener noreferrer">GitHub Pages</a>
-                                </li>
-                                <li>
-                                    <a className="footer__link"
-                                       href="https://github.com/rimvydasb/edgerules-page/issues" target="_blank"
-                                       rel="noopener noreferrer">Support & feedback</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className="footer__col">
-                            <div className="footer__title">Community</div>
-                            <ul className="footer__list">
-                                <li>
-                                    <a className="footer__link" href="https://github.com/rimvydasb" target="_blank"
-                                       rel="noopener noreferrer">GitHub Profile</a>
-                                </li>
-                                <li>
-                                    <a className="footer__link" href="https://github.com/rimvydasb/edgerules-page"
-                                       target="_blank" rel="noopener noreferrer">Repository</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div className="footer__col">
-                            <div className="footer__title">Project</div>
-                            <ul className="footer__list">
-                                <li>
-                                    <a className="footer__link"
-                                       href="https://github.com/rimvydasb/edgerules-page/blob/main/README.md"
-                                       target="_blank" rel="noopener noreferrer">README</a>
-                                </li>
-                                <li>
-                                    <a className="footer__link"
-                                       href="https://github.com/rimvydasb/edgerules-page/blob/main/LICENSE"
-                                       target="_blank" rel="noopener noreferrer">License</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="footer__bottom">
-                        <div>Interactive examples powered by EdgeRules WASM.</div>
-                        <div className="footer__copyright">© {new Date().getFullYear()} edgerules-page</div>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
         </div>
     )
 }
