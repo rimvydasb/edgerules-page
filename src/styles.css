@@ -86,10 +86,14 @@ body {
 .container__editor {
     font-size: 12px;
     font-variant-ligatures: common-ligatures;
-    background-color: var(--panel);
+    background-color: var(--bg);
     border-radius: 6px;
     border: 1px solid var(--border);
     overflow: hidden;
+}
+
+.editor.readonly {
+    background-color: var(--panel);
 }
 
 .container__editor textarea {
@@ -108,12 +112,16 @@ body {
 
 .output {
     margin: 0;
-    background: #fff;
-    border: 1px dashed var(--border);
+    background: var(--panel);
+    border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 12px 16px;
-    color: #1f2937;
+    padding: 16px;
+    color: var(--text);
     white-space: pre-wrap;
+    font-size: 12px;
+    font-variant-ligatures: common-ligatures;
+    tab-size: 4ch;
+    overflow: auto;
 }
 
 /* Footer */

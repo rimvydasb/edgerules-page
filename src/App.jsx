@@ -145,7 +145,19 @@ export default function App() {
                                     />
                                 </div>
                                 <div className="example-col example-output">
-                                    <pre className="output bright">{ex.error ? `Error:\n${ex.error}` : ex.output}</pre>
+                                    <Editor
+                                        value={ex.error ? `Error:\n${ex.error}` : ex.output}
+                                        onValueChange={() => {}}
+                                        highlight={highlight}
+                                        padding={16}
+                                        readOnly
+                                        className="container__editor editor readonly"
+                                        preClassName={`language-${lang}`}
+                                        style={{
+                                            fontFamily: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                            fontSize: 12,
+                                        }}
+                                    />
                                 </div>
 
                             </section>
