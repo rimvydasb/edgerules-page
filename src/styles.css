@@ -116,11 +116,68 @@ body {
     white-space: pre-wrap;
 }
 
+/* Footer */
 .footer {
-    padding: 14px 20px;
-    border-top: 1px solid var(--border);
-    color: var(--muted);
-    background: #fff;
+    background: #111827; /* neutral-900 */
+    color: #e5e7eb;      /* neutral-200 */
+    padding: 40px 0;
+}
+
+.footer__inner {
+    max-width: 1024px; /* ~max-w-6xl */
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 640px) {
+    .footer__grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.footer__title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #cbd5e1; /* slate-300 */
+    margin-bottom: 12px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+}
+
+.footer__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.footer__link {
+    color: #d1d5db; /* neutral-300 */
+    text-decoration: none;
+}
+
+.footer__link:hover {
+    color: #ffffff;
+}
+
+.footer__bottom {
+    border-top: 1px solid #1f2937; /* neutral-800 */
+    margin-top: 32px;
+    padding-top: 16px;
+    text-align: center;
+    color: #9ca3af; /* neutral-400 */
+    font-size: 12px;
+}
+
+.footer__copyright {
+    margin-top: 4px;
 }
 
 /* Prefer Fira Mono (or Fira Code) for code */
