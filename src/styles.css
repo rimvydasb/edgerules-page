@@ -121,3 +121,16 @@ pre {
 .token.important { font-weight: 700; }
 .token.italic { font-style: italic; }
 .token.entity { cursor: help; }
+
+/* Examples layout */
+.example-row {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  margin: 16px 0 28px;
+}
+.example-col { flex: 1 1 0; min-width: 0; }
+.example-output .output { min-height: 160px; }
+.example-editor .editor { min-height: 160px; }
+.example-title { margin: 0 0 6px; font-size: 14px; }
+.example-desc { margin: 0 0 10px; color: var(--muted); font-size: 12px; }

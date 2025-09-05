@@ -4,23 +4,35 @@ import Prism from 'prismjs'
 import 'prismjs/components/prism-javascript'
 // Using custom bright theme styles in src/styles.css
 
-const initialCode = `// Welcome to EdgeRules Playground
-// Edit the JavaScript below. Syntax highlighting is powered by Prism.
-
-function greet(name) {
-  return ` + "`Hello, ${name}!`" + `
-}
-
-console.log(greet('world'))
-`;
+const EXAMPLES = [
+  {
+    id: 'ex1',
+    title: 'Example 1',
+    description: 'Basic arithmetic',
+    initial: '{ value : 10 + 20 }'
+  },
+  {
+    id: 'ex2',
+    title: 'Example 2',
+    description: 'Aggregate sum',
+    initial: '{ total : sum([1,2,3]) }'
+  },
+  {
+    id: 'ex3',
+    title: 'Example 3',
+    description: 'Refs and expressions',
+    initial: '{ a : 1; b : a + 2 }'
+  }
+]
 
 export default function App() {
-    const [code, setCode] = useState(initialCode)
     const [lang] = useState('javascript')
     const [wasmReady, setWasmReady] = useState(false)
     const [wasmError, setWasmError] = useState(null)
-    const [wasmLogs, setWasmLogs] = useState([])
     const wasmRef = useRef(null)
+    const [examples, setExamples] = useState(
+      EXAMPLES.map(e => ({ ...e, input: e.initial, output: '', error: null }))
+    )
 
     const highlight = useMemo(() => (codeStr) => {
         try {
@@ -66,17 +78,29 @@ export default function App() {
         }
     }, [])
 
-    const runWasmDemo = async () => {
-        if (!wasmRef.current) return
-        const {evaluate_value, evaluate_field, to_trace} = wasmRef.current
-        try {
-            const logs = []
-            logs.push({label: 'evaluate_value', value: await evaluate_value('{ value : 10 + 20 }')})
-            logs.push({label: 'evaluate_field', value: await evaluate_field('{ total : sum([1,2,3]) }', 'total')})
-            logs.push({label: 'to_trace', value: to_trace('{ a : 1; b : a + 2 }')})
-            setWasmLogs(logs)
-        } catch (e) {
-            setWasmLogs([{label: 'error', value: e?.message || String(e)}])
+    // Recompute outputs when WASM becomes ready
+    useEffect(() => {
+        if (!wasmReady || !wasmRef.current) return
+        const { to_trace } = wasmRef.current
+        setExamples(prev => prev.map(ex => {
+            try {
+                const out = to_trace(ex.input)
+                return { ...ex, output: out, error: null }
+            } catch (err) {
+                return { ...ex, output: '', error: err?.message || String(err) }
+            }
+        }))
+    }, [wasmReady])
+
+    const onChangeExample = (id, value) => {
+        setExamples(prev => prev.map(ex => ex.id === id ? { ...ex, input: value } : ex))
+        if (wasmRef.current) {
+            try {
+                const out = wasmRef.current.to_trace(value)
+                setExamples(prev => prev.map(ex => ex.id === id ? { ...ex, output: out, error: null } : ex))
+            } catch (err) {
+                setExamples(prev => prev.map(ex => ex.id === id ? { ...ex, output: '', error: err?.message || String(err) } : ex))
+            }
         }
     }
 
@@ -89,43 +113,33 @@ export default function App() {
 
             <div className="container">
                 <div className="container__content">
-                    <div className="container_editor_area">
-                        <Editor
-                            value={code}
-                            onValueChange={setCode}
+                    {!wasmReady && !wasmError && <p>Loading WebAssembly…</p>}
+                    {wasmError && <p style={{color: '#b91c1c'}}>WASM load error: {wasmError}</p>}
+
+                    {examples.map(ex => (
+                      <section key={ex.id} className="example-row">
+                        <div className="example-col example-output">
+                          <h3 className="example-title">{ex.title}</h3>
+                          <p className="example-desc">{ex.description}</p>
+                          <pre className="output bright">{ex.error ? `Error:\n${ex.error}` : ex.output}</pre>
+                        </div>
+                        <div className="example-col example-editor">
+                          <Editor
+                            value={ex.input}
+                            onValueChange={(v) => onChangeExample(ex.id, v)}
                             highlight={highlight}
                             padding={16}
-                            textareaId="code-editor"
+                            textareaId={`editor-${ex.id}`}
                             className="container__editor editor"
                             preClassName={`language-${lang}`}
                             style={{
-                                fontFamily: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                                fontSize: 12,
+                              fontFamily: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                              fontSize: 12,
                             }}
-                        />
-                    </div>
-
-                    <section className="output-wrap bright">
-                        <h2>Output (static preview)</h2>
-                        <pre className="output bright">
-{code}
-            </pre>
-                    </section>
-
-                    <section className="output-wrap bright">
-                        <h2>WASM Demo</h2>
-                        {!wasmReady && !wasmError && <p>Loading WebAssembly…</p>}
-                        {wasmError && <p style={{color: '#b91c1c'}}>WASM load error: {wasmError}</p>}
-                        {wasmReady && (
-                            <div>
-                                <button className="button" onClick={runWasmDemo}>Run Demo</button>
-                                {wasmLogs.map((l, i) => (
-                                    <pre className="output bright" key={i}>{`${l.label}:
-${l.value}`}</pre>
-                                ))}
-                            </div>
-                        )}
-                    </section>
+                          />
+                        </div>
+                      </section>
+                    ))}
                 </div>
             </div>
 
