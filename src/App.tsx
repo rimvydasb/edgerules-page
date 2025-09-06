@@ -111,7 +111,7 @@ export default function App() {
 
                             <section className="example-row">
                                 {/* description */}
-                                <div className="example-col example-output">
+                                <div className="example-col example-output top-row">
                                     <p className="example-desc">{ex.description}</p>
                                 </div>
 

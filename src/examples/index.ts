@@ -1,17 +1,34 @@
-import type { BaseExample } from './types'
+import type {BaseExample} from './types'
 
 export const BASE_EXAMPLES: BaseExample[] = [
+    {
+        id: 'intro',
+        title: 'Introduction',
+        description: 'EdgeRules expression language helps you to define business rules and calculations. ' +
+            'It is a simple, yet powerful language with a small set of concepts that you can combine to express complex logic. ' +
+            'Here are some interactive examples to get you started. In the example below, we calculate the best 3-month sales period.' +
+            'You can edit the code and see the results immediately.',
+        codeExample: `{
+    sales : [10, 20, 8, 7, 1, 10, 6, 78, 0, 8, 0, 8]
+    salesCount : count(sales)
+    sales3(month, sales) : { 
+        result : sales[month] + sales[month + 1] + sales[month + 2] 
+    }
+    acc : for m in 1..(salesCount - 2) return sales3(m, sales).result
+    best : max(acc)
+}`
+    },
     {
         id: 'numbers-arithmetic',
         title: 'Number · Arithmetic',
         description: 'Integers and reals with +, -, *, /, ^ and unary -.',
         codeExample: `{
-    summing      : 4 + 1.2
-    subtracting  : 12 - 3
-    product      : 6 * 7
-    division     : 10 / 4
-    power        : 2 ^ 8
-    negate       : -(5 + 1)
+    summing : 4 + 1.2
+    subtracting : 12 - 3
+    product : 6 * 7
+    division : 10 / 4
+    power : 2 ^ 8
+    negate : -(5 + 1)
 }`
     },
     {
@@ -19,12 +36,12 @@ export const BASE_EXAMPLES: BaseExample[] = [
         title: 'Number · Comparisons',
         description: 'Numeric comparisons: <, <=, >, >=, =, <>.',
         codeExample: `{
-    lt           : 1 < 2
-    le           : 2 <= 2
-    gt           : 3 > 1
-    ge           : 4 >= 4
-    eq           : 5 = 5
-    ne           : 6 <> 7
+    lower : 1 < 2
+    lowerEquals : 2 <= 2
+    greater : 3 > 1
+    greaterEquals : 4 >= 4
+    simpleEquals : 5 = 5
+    negate : 6 <> 7
 }`
     },
     {
@@ -32,12 +49,12 @@ export const BASE_EXAMPLES: BaseExample[] = [
         title: 'Boolean',
         description: 'Booleans true/false and logical operators not/and/or/xor.',
         codeExample: `{
-    a            : true
-    b            : false
-    allTrue      : a and not b
-    anyTrue      : a or b
-    justOne      : a xor b
-    negateComp   : not (3 = 4)
+    a : true
+    b : false
+    allTrue : a and not b
+    anyTrue : a or b
+    justOne : a xor b
+    negateComp : not (3 = 4)
 }`
     },
     {
@@ -45,10 +62,10 @@ export const BASE_EXAMPLES: BaseExample[] = [
         title: 'String',
         description: 'Single or double quotes. Compare with = and <>.',
         codeExample: `{
-    a            : 'hello'
-    b            : "hello"
-    equal        : a = b
-    notEqual     : 'A' <> 'B'
+    a : 'hello'
+    b : "hello"
+    equal : a = b
+    notEqual : 'A' <> 'B'
 }`
     },
     {

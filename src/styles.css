@@ -291,6 +291,8 @@ pre {
     gap: 16px;
     align-items: stretch;      /* makes all columns the same height */
     margin: 16px 0 28px;
+    /* allow a full-width top row (description) above editors */
+    flex-wrap: wrap;
 }
 
 /* header row container (fix selector bug: this belongs outside .example-row) */
@@ -316,6 +318,14 @@ pre {
 .example-row .container__editor {
     flex: 1 1 auto;
     height: 100%;
+}
+
+.example-row .top-row {
+    /* make the description span the full width on its own row */
+    flex: 0 0 100%;
+    width: 100%;
+    margin-top: 0;
+    display: block;
 }
 
 /* ↦ arrow column between editors */
@@ -349,7 +359,13 @@ pre {
 /* Responsive: stack columns on small screens; rotate arrow */
 @media (max-width: 720px) {
     .example-row {
+        /* on small screens, stack naturally without wrap tricks */
         flex-direction: column;
+    }
+    /* reset the top row behavior when stacked */
+    .example-row .top-row {
+        flex: 0 0 auto;
+        width: 100%;
     }
     .example-arrow {
         min-width: 0;
