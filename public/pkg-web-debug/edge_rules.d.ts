@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export function init_panic_hook(): void;
-export function to_trace(code: string): string;
-export function evaluate_value(code: string): string;
+export function evaluate_all(code: string): string;
+export function evaluate_expression(code: string): string;
 export function evaluate_field(code: string, field: string): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -10,12 +10,12 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly init_panic_hook: () => void;
-  readonly to_trace: (a: number, b: number) => [number, number];
-  readonly evaluate_value: (a: number, b: number) => [number, number];
+  readonly evaluate_all: (a: number, b: number) => [number, number];
+  readonly evaluate_expression: (a: number, b: number) => [number, number];
   readonly evaluate_field: (a: number, b: number, c: number, d: number) => [number, number];
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_export_3: WebAssembly.Table;
   readonly __wbindgen_start: () => void;
 }
