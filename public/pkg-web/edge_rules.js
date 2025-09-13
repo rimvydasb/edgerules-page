@@ -1,4 +1,4 @@
-import { __er_from_base64, __er_regex_replace, __er_to_base64 } from './snippets/edge-rules-3367111b1fb2186f/inline0.js';
+import { __er_from_base64, __er_regex_replace, __er_regex_split, __er_to_base64 } from './snippets/edge-rules-3367111b1fb2186f/inline0.js';
 
 let wasm;
 
@@ -192,6 +192,13 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbg_erregexreplace_01466532a9683896 = function(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) {
         const ret = __er_regex_replace(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4), getStringFromWasm0(arg5, arg6), getStringFromWasm0(arg7, arg8));
+        const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+        getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+    };
+    imports.wbg.__wbg_erregexsplit_841163d3e3f346fd = function(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
+        const ret = __er_regex_split(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4), getStringFromWasm0(arg5, arg6));
         const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len1 = WASM_VECTOR_LEN;
         getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);

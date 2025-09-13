@@ -1,5 +1,13 @@
 # String Built-in Functions Reference
 
+## toString
+
+Converting the number to string. Math operator `+` can be used for string concatenation, but both operands must be strings.
+
+```edgerules
+"#" + toString(404)
+```
+
 ## substring
 
 Substring starting at position
