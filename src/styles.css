@@ -356,6 +356,12 @@ pre {
     font-size: 12px;
 }
 
+.no-wrap {
+    white-space: pre !important;      /* keep lines intact */
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+}
+
 /* Responsive: stack columns on small screens; rotate arrow */
 @media (max-width: 720px) {
     .example-row {

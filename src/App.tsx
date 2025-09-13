@@ -174,10 +174,12 @@ export default function App() {
                                         padding={16}
                                         textareaId={`editor-${ex.id}`}
                                         className="container__editor editor"
-                                        preClassName={`language-${lang}`}
+                                        preClassName={`language-${lang} no-wrap`}
+                                        textareaClassName="no-wrap"
                                         style={{
                                             fontFamily: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
                                             fontSize: 12,
+                                            overflowX: 'auto',
                                         }}
                                     />
                                 </div>
@@ -197,10 +199,12 @@ export default function App() {
                                         padding={16}
                                         readOnly
                                         className="container__editor editor readonly"
-                                        preClassName={`language-${lang}`}
+                                        preClassName={`language-${lang} no-wrap`}
+                                        textareaClassName="no-wrap"
                                         style={{
                                             fontFamily: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
                                             fontSize: 12,
+                                            overflowX: 'auto',
                                         }}
                                     />
                                 </div>
