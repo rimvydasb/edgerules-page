@@ -146,8 +146,9 @@ export default function App() {
             <header className="header bright">
                 <h1>EdgeRules Language</h1>
                 <p>Reference and Interactive Playground</p>
+                <p>&nbsp;</p>
+                <p>menu</p>
             </header>
-
             <div className="container">
                 <div className="container__content">
                     {!wasmReady && !wasmError && <p>Loading WebAssembly…</p>}
