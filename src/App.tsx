@@ -5,7 +5,8 @@ import 'prismjs/components/prism-javascript'
 // Using custom bright theme styles in src/styles.css
 import Footer from './components/Footer'
 import type { BaseExample, Example } from './examples/types'
-import { parseBaseExamplesMarkdown, type ExampleBlock } from './utils/parseBaseExamples'
+import { fetchAndParseBaseExamples } from './utils/parseBaseExamples'
+import { CONTENT_PAGES } from './content/pages'
 
 export default function App() {
     const [lang] = useState<'javascript'>('javascript')
@@ -13,6 +14,7 @@ export default function App() {
     const [wasmError, setWasmError] = useState<string | null>(null)
     const wasmRef = useRef<EdgeRulesMod | null>(null)
     const [examples, setExamples] = useState<Example[]>([])
+    const [activeIndex, setActiveIndex] = useState<number>(0)
 
     const highlight = useMemo<((codeStr: string) => string)>(() => (codeStr: string) => {
         try {
@@ -79,51 +81,31 @@ export default function App() {
         setExamples(prev => computeOutputs(prev))
     }, [wasmReady])
 
-    // Load BASE_EXAMPLES.md from public, parse, and seed examples
+    // Load selected page markdown and seed examples; recompute when WASM ready
     useEffect(() => {
         let cancelled = false
 
-        const toSlug = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-
-        const mapBlocksToBase = (blocks: ExampleBlock[]): BaseExample[] => {
-            return blocks.map((b, idx): BaseExample => {
-                const title = b.sectionTitle
-                    ? (b.sectionSubtitle ? `${b.sectionTitle} · ${b.sectionSubtitle}` : b.sectionTitle)
-                    : (b.pageTitle ?? `Example ${idx + 1}`)
-                const idBase = b.sectionTitle
-                    ? [b.sectionTitle, b.sectionSubtitle].filter(Boolean).join(' ')
-                    : (b.pageTitle ?? `example-${idx + 1}`)
-                const id = toSlug(idBase)
-                return { id, title, description: b.description, codeExample: b.codeExample }
-            })
-        }
-
-        const load = async () => {
+        const loadPage = async (): Promise<void> => {
+            const item = CONTENT_PAGES[activeIndex]
+            if (!item) return
+            const ref = item.contentReference
             try {
-                const base = (import.meta as any).env?.BASE_URL ?? '/'
-                const resp = await fetch(`${base}BASE_EXAMPLES.md`)
-                if (!resp.ok) throw new Error(`Failed to fetch BASE_EXAMPLES.md: ${resp.status}`)
-                const md = await resp.text()
-                const blocks = parseBaseExamplesMarkdown(md)
-                const seed: BaseExample[] = mapBlocksToBase(blocks)
-                const ex: Example[] = seed.map((e: BaseExample) => ({ ...e, input: e.codeExample, output: '', error: null }))
+                const seed: BaseExample[] = await fetchAndParseBaseExamples(ref)
+                const ex: Example[] = seed.map((e: BaseExample): Example => ({ ...e, input: e.codeExample, output: '', error: null }))
                 if (!cancelled) {
-                    setExamples(prev => {
+                    setExamples(() => {
                         const next = ex
                         return wasmRef.current ? computeOutputs(next) : next
                     })
                 }
-            } catch (err) {
-                // In case of failure keep examples empty; optionally could log
-                if (!cancelled) {
-                    setExamples([])
-                }
+            } catch {
+                if (!cancelled) setExamples([])
             }
         }
 
-        load()
+        void loadPage()
         return () => { cancelled = true }
-    }, [wasmReady])
+    }, [activeIndex, wasmReady])
 
     const onChangeExample = (id: string, value: string) => {
         setExamples(prev => prev.map(ex => ex.id === id ? {...ex, input: value} : ex))
@@ -146,8 +128,22 @@ export default function App() {
             <header className="header bright">
                 <h1>EdgeRules Language</h1>
                 <p>Reference and Interactive Playground</p>
-                <p>&nbsp;</p>
-                <p>menu</p>
+                <nav className="header__nav" aria-label="Content menu">
+                    <ul className="header__menu">
+                        {CONTENT_PAGES.map((item, idx) => (
+                            <li key={`${item.menuTitle}-${idx}`} className={idx === activeIndex ? 'active' : ''}>
+                                <button
+                                    type="button"
+                                    className="header__menu-btn"
+                                    aria-current={idx === activeIndex ? 'page' : undefined}
+                                    onClick={() => setActiveIndex(idx)}
+                                >
+                                    {item.menuTitle}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
             </header>
             <div className="container">
                 <div className="container__content">

@@ -1,3 +1,5 @@
+import type { BaseExample } from '../examples/types'
+
 export interface ExampleBlock {
     pageTitle: string | null;
     sectionTitle: string | null;
@@ -80,4 +82,69 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
     }
 
     return blocks;
+}
+
+/** Public content menu configuration item. */
+export interface ContentMenuItem {
+    menuTitle: string;
+    contentReference: string; // relative path under public/, e.g., "BASE_EXAMPLES.md"
+}
+
+/** Compute the app base URL from Vite env, normalized with trailing slash. */
+export function getBaseUrl(): string {
+    const env = (import.meta as unknown as { env?: Record<string, unknown> })?.env
+    const base = env ? (env['BASE_URL'] as unknown) : undefined
+    const val = typeof base === 'string' && base.length > 0 ? base : '/'
+    return val.endsWith('/') ? val : `${val}/`
+}
+
+/** Create a slug id from a title. */
+export function toSlug(s: string): string {
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+/** Map parsed blocks to BaseExample records. */
+export function mapBlocksToBaseExamples(blocks: ExampleBlock[]): BaseExample[] {
+    return blocks.map((b, idx): BaseExample => {
+        const title = b.sectionTitle
+            ? (b.sectionSubtitle ? `${b.sectionTitle} · ${b.sectionSubtitle}` : b.sectionTitle)
+            : (b.pageTitle ?? `Example ${idx + 1}`)
+        const idBase = b.sectionTitle
+            ? [b.sectionTitle, b.sectionSubtitle].filter(Boolean).join(' ')
+            : (b.pageTitle ?? `example-${idx + 1}`)
+        const id = toSlug(idBase)
+        return { id, title, description: b.description, codeExample: b.codeExample }
+    })
+}
+
+/** Fetch a markdown file from public by relative reference. */
+export async function fetchMarkdown(reference: string): Promise<string> {
+    // Prefer relative fetch for correct resolution under Vite base path in dev/prod
+    const normalized = reference.replace(/^\/+/, '')
+
+    const tryUrls: string[] = [normalized]
+    // Fallback to explicit base prefix if relative path fails in some hosting setups
+    const base = getBaseUrl()
+    if (base && base !== '/' && !base.endsWith(normalized)) {
+        tryUrls.push(`${base}${normalized}`)
+    }
+
+    let lastStatus: string | number = 'unknown'
+    for (const url of tryUrls) {
+        try {
+            const resp = await fetch(url)
+            if (resp.ok) return await resp.text()
+            lastStatus = resp.status
+        } catch (e) {
+            lastStatus = (e as Error)?.message || String(e)
+        }
+    }
+    throw new Error(`Failed to fetch ${reference}: ${lastStatus}`)
+}
+
+/** Fetch a markdown page and return mapped BaseExamples. */
+export async function fetchAndParseBaseExamples(reference: string): Promise<BaseExample[]> {
+    const md = await fetchMarkdown(reference)
+    const blocks = parseBaseExamplesMarkdown(md)
+    return mapBlocksToBaseExamples(blocks)
 }
