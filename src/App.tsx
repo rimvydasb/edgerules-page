@@ -61,25 +61,26 @@ export default function App() {
         }
     }, [])
 
+    // Single place for evaluating input via the WASM module
+    const evaluateWithMod = (mod: EdgeRulesMod, input: string): string => {
+        const nonEmptyLines = input.split(/\r?\n/).filter((l) => l.trim() !== '')
+        if (nonEmptyLines.length === 1) {
+            return mod.evaluate_expression(nonEmptyLines[0]!)
+        }
+        return mod.evaluate_all(input)
+    }
+
     // Helper to compute outputs for current examples
     const computeOutputs = (items: Example[]): Example[] => {
-        if (!wasmRef.current) return items
-        const mod = wasmRef.current as unknown as Record<string, unknown>
-        const evalAll = (typeof mod['evaluate_all'] === 'function'
-            ? (mod['evaluate_all'] as (s: string) => string)
-            : (mod['evaluate_all'] as (s: string) => string))
-        const evalExpr = (typeof mod['evaluate_expression'] === 'function'
-            ? (mod['evaluate_expression'] as (s: string) => string)
-            : evalAll)
-        return items.map(ex => {
+        const mod = wasmRef.current
+        if (!mod) return items
+
+        return items.map((ex): Example => {
             try {
-                const nonEmpty = ex.input.split(/\r?\n/).filter(l => l.trim() !== '')
-                const out = nonEmpty.length === 1
-                    ? evalExpr(nonEmpty[0]!)
-                    : evalAll(ex.input)
+                const out = evaluateWithMod(mod, ex.input)
                 return { ...ex, output: out, error: null }
             } catch (err) {
-                return { ...ex, output: '', error: (err as Error)?.message || String(err) }
+                return { ...ex, output: '', error: (err as Error)?.message ?? String(err) }
             }
         })
     }
@@ -117,28 +118,18 @@ export default function App() {
     }, [activeIndex, wasmReady])
 
     const onChangeExample = (id: string, value: string) => {
-        setExamples(prev => prev.map(ex => ex.id === id ? {...ex, input: value} : ex))
-        if (wasmRef.current) {
-            try {
-                const mod = wasmRef.current as unknown as Record<string, unknown>
-                const evalAll = (typeof mod['evaluate_all'] === 'function'
-                    ? (mod['evaluate_all'] as (s: string) => string)
-                    : (mod['to_trace'] as (s: string) => string))
-                const evalExpr = (typeof mod['evaluate_expression'] === 'function'
-                    ? (mod['evaluate_expression'] as (s: string) => string)
-                    : evalAll)
-                const nonEmpty = value.split(/\r?\n/).filter(l => l.trim() !== '')
-                const out = nonEmpty.length === 1
-                    ? evalExpr(nonEmpty[0]!)
-                    : evalAll(value)
-                setExamples(prev => prev.map(ex => ex.id === id ? {...ex, output: out, error: null} : ex))
-            } catch (err) {
-                setExamples(prev => prev.map(ex => ex.id === id ? {
-                    ...ex,
-                    output: '',
-                    error: (err as Error)?.message || String(err)
-                } : ex))
-            }
+        const mod = wasmRef.current
+        if (!mod) {
+            setExamples(prev => prev.map(ex => ex.id === id ? { ...ex, input: value } : ex))
+            return
+        }
+
+        try {
+            const out = evaluateWithMod(mod, value)
+            setExamples(prev => prev.map(ex => ex.id === id ? { ...ex, input: value, output: out, error: null } : ex))
+        } catch (err) {
+            const msg = (err as Error)?.message ?? String(err)
+            setExamples(prev => prev.map(ex => ex.id === id ? { ...ex, input: value, output: '', error: msg } : ex))
         }
     }
 
