@@ -100,12 +100,13 @@ export default function App() {
 
         const load = async () => {
             try {
-                const resp = await fetch('/BASE_EXAMPLES.md')
+                const base = (import.meta as any).env?.BASE_URL ?? '/'
+                const resp = await fetch(`${base}BASE_EXAMPLES.md`)
                 if (!resp.ok) throw new Error(`Failed to fetch BASE_EXAMPLES.md: ${resp.status}`)
                 const md = await resp.text()
                 const blocks = parseBaseExamplesMarkdown(md)
-                const base = mapBlocksToBase(blocks)
-                const ex: Example[] = base.map((e) => ({ ...e, input: e.codeExample, output: '', error: null }))
+                const seed: BaseExample[] = mapBlocksToBase(blocks)
+                const ex: Example[] = seed.map((e: BaseExample) => ({ ...e, input: e.codeExample, output: '', error: null }))
                 if (!cancelled) {
                     setExamples(prev => {
                         const next = ex
