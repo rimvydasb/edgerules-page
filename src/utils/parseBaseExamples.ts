@@ -30,11 +30,11 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
     };
 
     for (let i = 0; i < lines.length; i += 1) {
-        const line = lines[i];
+        const line = (lines[i] ?? "");
 
         if (!inCode) {
             const m1 = line.match(/^#\s+(.+)/);
-            if (m1) {
+            if (m1 && m1[1]) {
                 pageTitle = m1[1].trim();
                 sectionTitle = null;
                 sectionSubtitle = null;
@@ -43,7 +43,7 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
             }
 
             const m2 = line.match(/^##\s+(.+)/);
-            if (m2) {
+            if (m2 && m2[1]) {
                 sectionTitle = m2[1].trim();
                 sectionSubtitle = null;
                 descriptionLines = [];
@@ -51,7 +51,7 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
             }
 
             const m3 = line.match(/^###\s+(.+)/);
-            if (m3) {
+            if (m3 && m3[1]) {
                 sectionSubtitle = m3[1].trim();
                 descriptionLines = [];
                 continue;
@@ -81,4 +81,3 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
 
     return blocks;
 }
-

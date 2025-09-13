@@ -5,16 +5,14 @@ import 'prismjs/components/prism-javascript'
 // Using custom bright theme styles in src/styles.css
 import Footer from './components/Footer'
 import type { BaseExample, Example } from './examples/types'
-import { BASE_EXAMPLES } from './examples'
+import { parseBaseExamplesMarkdown, type ExampleBlock } from './utils/parseBaseExamples'
 
 export default function App() {
     const [lang] = useState<'javascript'>('javascript')
     const [wasmReady, setWasmReady] = useState(false)
     const [wasmError, setWasmError] = useState<string | null>(null)
     const wasmRef = useRef<EdgeRulesMod | null>(null)
-    const [examples, setExamples] = useState<Example[]>(
-        BASE_EXAMPLES.map((e): Example => ({...e, input: e.codeExample, output: '', error: null}))
-    )
+    const [examples, setExamples] = useState<Example[]>([])
 
     const highlight = useMemo<((codeStr: string) => string)>(() => (codeStr: string) => {
         try {
@@ -61,18 +59,69 @@ export default function App() {
         }
     }, [])
 
+    // Helper to compute outputs for current examples
+    const computeOutputs = (items: Example[]): Example[] => {
+        if (!wasmRef.current) return items
+        const { to_trace } = wasmRef.current
+        return items.map(ex => {
+            try {
+                const out = to_trace(ex.input)
+                return { ...ex, output: out, error: null }
+            } catch (err) {
+                return { ...ex, output: '', error: (err as Error)?.message || String(err) }
+            }
+        })
+    }
+
     // Recompute outputs when WASM becomes ready
     useEffect(() => {
         if (!wasmReady || !wasmRef.current) return
-        const {to_trace} = wasmRef.current
-        setExamples(prev => prev.map(ex => {
+        setExamples(prev => computeOutputs(prev))
+    }, [wasmReady])
+
+    // Load BASE_EXAMPLES.md from public, parse, and seed examples
+    useEffect(() => {
+        let cancelled = false
+
+        const toSlug = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+
+        const mapBlocksToBase = (blocks: ExampleBlock[]): BaseExample[] => {
+            return blocks.map((b, idx): BaseExample => {
+                const title = b.sectionTitle
+                    ? (b.sectionSubtitle ? `${b.sectionTitle} · ${b.sectionSubtitle}` : b.sectionTitle)
+                    : (b.pageTitle ?? `Example ${idx + 1}`)
+                const idBase = b.sectionTitle
+                    ? [b.sectionTitle, b.sectionSubtitle].filter(Boolean).join(' ')
+                    : (b.pageTitle ?? `example-${idx + 1}`)
+                const id = toSlug(idBase)
+                return { id, title, description: b.description, codeExample: b.codeExample }
+            })
+        }
+
+        const load = async () => {
             try {
-                const out = to_trace(ex.input)
-                return {...ex, output: out, error: null}
+                const resp = await fetch('/BASE_EXAMPLES.md')
+                if (!resp.ok) throw new Error(`Failed to fetch BASE_EXAMPLES.md: ${resp.status}`)
+                const md = await resp.text()
+                const blocks = parseBaseExamplesMarkdown(md)
+                const base = mapBlocksToBase(blocks)
+                const ex: Example[] = base.map((e) => ({ ...e, input: e.codeExample, output: '', error: null }))
+                if (!cancelled) {
+                    setExamples(prev => {
+                        const next = ex
+                        return wasmRef.current ? computeOutputs(next) : next
+                    })
+                }
             } catch (err) {
-                return {...ex, output: '', error: (err as Error)?.message || String(err)}
+                // In case of failure keep examples empty; optionally could log
+                if (!cancelled) {
+                    setExamples([])
+                }
             }
-        }))
+        }
+
+        load()
+        return () => { cancelled = true }
     }, [wasmReady])
 
     const onChangeExample = (id: string, value: string) => {

@@ -7,8 +7,6 @@ describe("BASE_EXAMPLES.md parsing (basic)", () => {
     const markdown = fs.readFileSync(mdPath, "utf8");
     const blocks: ExampleBlock[] = parseBaseExamplesMarkdown(markdown);
 
-    console.log("Parsed example blocks:", blocks);
-
     test("collects all code blocks", () => {
         expect(blocks.length).toBe(13);
     });
