@@ -19,7 +19,8 @@
 
         const api = {
             ready: Promise.resolve(true),
-            to_trace: (input) => mod.evaluate_all(input)
+            evaluate_all: (input) => mod.evaluate_all(input),
+            evaluate_expression: (input) => mod.evaluate_expression(input)
         };
 
         window.__edgeRules = api;
@@ -29,4 +30,3 @@
         window.dispatchEvent(new CustomEvent('edgerules-error', { detail: { error } }));
     }
 })();
-

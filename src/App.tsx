@@ -64,10 +64,19 @@ export default function App() {
     // Helper to compute outputs for current examples
     const computeOutputs = (items: Example[]): Example[] => {
         if (!wasmRef.current) return items
-        const { to_trace } = wasmRef.current
+        const mod = wasmRef.current as unknown as Record<string, unknown>
+        const evalAll = (typeof mod['evaluate_all'] === 'function'
+            ? (mod['evaluate_all'] as (s: string) => string)
+            : (mod['evaluate_all'] as (s: string) => string))
+        const evalExpr = (typeof mod['evaluate_expression'] === 'function'
+            ? (mod['evaluate_expression'] as (s: string) => string)
+            : evalAll)
         return items.map(ex => {
             try {
-                const out = to_trace(ex.input)
+                const nonEmpty = ex.input.split(/\r?\n/).filter(l => l.trim() !== '')
+                const out = nonEmpty.length === 1
+                    ? evalExpr(nonEmpty[0]!)
+                    : evalAll(ex.input)
                 return { ...ex, output: out, error: null }
             } catch (err) {
                 return { ...ex, output: '', error: (err as Error)?.message || String(err) }
@@ -111,7 +120,17 @@ export default function App() {
         setExamples(prev => prev.map(ex => ex.id === id ? {...ex, input: value} : ex))
         if (wasmRef.current) {
             try {
-                const out = wasmRef.current.to_trace(value)
+                const mod = wasmRef.current as unknown as Record<string, unknown>
+                const evalAll = (typeof mod['evaluate_all'] === 'function'
+                    ? (mod['evaluate_all'] as (s: string) => string)
+                    : (mod['to_trace'] as (s: string) => string))
+                const evalExpr = (typeof mod['evaluate_expression'] === 'function'
+                    ? (mod['evaluate_expression'] as (s: string) => string)
+                    : evalAll)
+                const nonEmpty = value.split(/\r?\n/).filter(l => l.trim() !== '')
+                const out = nonEmpty.length === 1
+                    ? evalExpr(nonEmpty[0]!)
+                    : evalAll(value)
                 setExamples(prev => prev.map(ex => ex.id === id ? {...ex, output: out, error: null} : ex))
             } catch (err) {
                 setExamples(prev => prev.map(ex => ex.id === id ? {

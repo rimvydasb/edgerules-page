@@ -22,6 +22,7 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
     let descriptionLines: string[] = [];
     let inCode = false;
     let codeLines: string[] = [];
+    let fenceLang: string | null = null;
 
     const pushBlock = (): void => {
         const description = descriptionLines.join("\n").trim();
@@ -60,14 +61,21 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
             }
         }
 
-        const isFence = /^```(\w+)?\s*$/.test(line);
-        if (isFence) {
+        const fenceOpen = line.match(/^```(\w+)?\s*$/);
+        if (fenceOpen) {
             if (!inCode) {
                 inCode = true;
+                fenceLang = (fenceOpen[1] ?? '').toLowerCase() || null;
                 continue;
             }
+
             inCode = false;
+            if (fenceLang === 'edgerules') {
+                while (codeLines.length > 0 && (codeLines[0] ?? '').trim() === '') codeLines.shift();
+                while (codeLines.length > 0 && (codeLines[codeLines.length - 1] ?? '').trim() === '') codeLines.pop();
+            }
             pushBlock();
+            fenceLang = null;
             continue;
         }
 
