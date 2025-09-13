@@ -245,7 +245,7 @@ reverse("abc")
 Remove characters not allowed in filenames.
 
 ```edgerules
-sanitizeFilename("a/b\\c:d*e?f\"g<h>ij")
+sanitizeFilename('a/b\\c:d*e?f\"g<h>ij.exe')
 ```
 
 ## interpolate
