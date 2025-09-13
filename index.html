@@ -17,23 +17,12 @@
     <div id="root"></div>
     <script type="module">
       const base = import.meta.env.BASE_URL || '/';
-      (async () => {
-        try {
-          const mod = await import(`${base}pkg-web/edge_rules.js`);
-          const init = mod?.default;
-          if (typeof init !== 'function') throw new Error('edge_rules init not found');
-          await init();
-          try { mod.init_panic_hook?.(); } catch {}
-          window.__edgeRules = {
-            ready: Promise.resolve(true),
-            to_trace: (input) => mod.evaluate_all(input),
-          };
-          window.dispatchEvent(new CustomEvent('edgerules-ready'));
-        } catch (error) {
-          console.error('EdgeRules loader error', error);
-          window.dispatchEvent(new CustomEvent('edgerules-error', { detail: { error } }));
-        }
-      })();
+      const bustJs = typeof __ER_JS_BUST__ !== 'undefined' ? __ER_JS_BUST__ : '';
+      const bustWasm = typeof __ER_WASM_BUST__ !== 'undefined' ? __ER_WASM_BUST__ : '';
+      const s = document.createElement('script');
+      s.type = 'module';
+      s.src = `${base}pkg-web/loader.js${(bustJs || bustWasm) ? `?js=${bustJs}&wasm=${bustWasm}` : ''}`;
+      document.head.appendChild(s);
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
