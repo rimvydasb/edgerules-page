@@ -93,7 +93,7 @@ endsWith("foobar", "r")
 Splits string by regex.
 
 ```edgerules
-regexSplit("a   b c", "\\s+")
+regexSplit("a   b c", "\s+")
 ```
 
 ## split
