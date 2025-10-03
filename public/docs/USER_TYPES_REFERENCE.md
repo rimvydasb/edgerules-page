@@ -22,13 +22,13 @@ Types can be nested and combined.
 {
     type Person: { name: <string>; age: <number>; tags: <string[]> }
     type PeopleList: Person[]
-    func getAdults(people: PeopleList): PeopleList {
-        result: for p in people if p.age >= 18 return p
+    func getAdults(people: PeopleList): {
+        result: people[age >= 18]
     }
     persons: [
-        {name: "Alice", age: 30, tags: ["engineer", "manager"]},
-        {name: "Bob", age: 15, tags: ["student"]},
-        {name: "Charlie", age: 22, tags: ["designer"]}
+        {name: "Alice"; age: 30; tags: ["engineer", "manager"]}
+        {name: "Bob"; age: 15; tags: ["student"]}
+        {name: "Charlie"; age: 22; tags: ["designer"]}
     ]
     adults: getAdults(persons)
 }
