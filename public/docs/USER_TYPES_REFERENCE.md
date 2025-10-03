@@ -25,11 +25,10 @@ Types can be nested and combined.
     func getAdults(people: PeopleList): {
         result: people[age >= 18]
     }
-    persons: [
+    adults: getAdults([
         {name: "Alice"; age: 30; tags: ["engineer", "manager"]}
         {name: "Bob"; age: 15; tags: ["student"]}
         {name: "Charlie"; age: 22; tags: ["designer"]}
-    ]
-    adults: getAdults(persons)
+    ])
 }
 ```
