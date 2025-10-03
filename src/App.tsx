@@ -61,13 +61,27 @@ export default function App() {
         }
     }, [])
 
+    const formatWasmResult = (value: unknown): string => {
+        if (value === undefined || value === null) return ''
+        if (typeof value === 'string') return value
+        if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+            return String(value)
+        }
+        if (value instanceof Error) return value.message
+        try {
+            return JSON.stringify(value, null, 2)
+        } catch {
+            return String(value)
+        }
+    }
+
     // Single place for evaluating input via the WASM module
     const evaluateWithMod = (mod: EdgeRulesMod, input: string): string => {
         const nonEmptyLines = input.split(/\r?\n/).filter((l) => l.trim() !== '')
-        if (nonEmptyLines.length === 1) {
-            return mod.evaluate_expression(nonEmptyLines[0]!)
-        }
-        return mod.evaluate_all(input)
+        const result = nonEmptyLines.length === 1
+            ? mod.evaluate_expression(nonEmptyLines[0]!)
+            : mod.evaluate_all(input)
+        return formatWasmResult(result)
     }
 
     // Helper to compute outputs for current examples
