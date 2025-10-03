@@ -157,3 +157,62 @@ export async function fetchAndParseBaseExamples(reference: string): Promise<Base
     const blocks = parseBaseExamplesMarkdown(md)
     return mapBlocksToBaseExamples(blocks)
 }
+
+// Pretty objects, but NEVER wrap arrays (inline them).
+export function stringifyNoWrapLists(value: unknown, indent = 2): string {
+    const pad = (n: number) => ' '.repeat(n * indent);
+
+    const prim = (v: unknown) =>
+        v === null || ['string', 'number', 'boolean'].includes(typeof v);
+
+    const fmt = (v: unknown, lvl: number): string => {
+        if (v === null) return 'null';
+        const t = typeof v;
+
+        if (t === 'string') return JSON.stringify(v);
+        if (t === 'number' || t === 'boolean') return String(v);
+        if (t === 'bigint') return `"${String(v)}"`; // keep JSON-safe
+
+        if (Array.isArray(v)) {
+            // Always inline arrays
+            const parts = v.map((x) =>
+                prim(x) ? fmt(x, 0) : fmt(x, lvl + 1) // complex items still allowed
+            );
+            // If any complex item expanded to multi-line, keep commas with a space
+            return `[${parts.join(', ')}]`;
+        }
+
+        if (t === 'object') {
+            const o = v as Record<string, unknown>;
+            const keys = Object.keys(o);
+            if (keys.length === 0) return '{}';
+            const body = keys
+                .map((k) => `${JSON.stringify(k)}: ${fmt(o[k], lvl + 1)}`)
+                .map((line) => pad(lvl + 1) + line)
+                .join('\n');
+            return `{\n${body}\n${pad(lvl)}}`;
+        }
+
+        // functions/symbol/undefined -> stringify safely
+        return JSON.stringify(String(v));
+    };
+
+    return fmt(value, 0);
+}
+
+// Use it in your existing function
+export function formatWasmResult(value: unknown): string {
+    if (value === undefined || value === null) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+        return String(value);
+    }
+    if (value instanceof Error) return value.message;
+
+    try {
+        return stringifyNoWrapLists(value, 2);
+    } catch {
+        return String(value);
+    }
+};
+

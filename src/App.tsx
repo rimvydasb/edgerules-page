@@ -5,7 +5,7 @@ import 'prismjs/components/prism-javascript'
 // Using custom bright theme styles in src/styles.css
 import Footer from './components/Footer'
 import type { BaseExample, Example } from './examples/types'
-import { fetchAndParseBaseExamples } from './utils/parseBaseExamples'
+import {fetchAndParseBaseExamples, formatWasmResult} from './utils/parseBaseExamples'
 import { CONTENT_PAGES } from './content/pages'
 
 export default function App() {
@@ -60,20 +60,6 @@ export default function App() {
             window.removeEventListener('edgerules-error', onError as EventListener)
         }
     }, [])
-
-    const formatWasmResult = (value: unknown): string => {
-        if (value === undefined || value === null) return ''
-        if (typeof value === 'string') return value
-        if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
-            return String(value)
-        }
-        if (value instanceof Error) return value.message
-        try {
-            return JSON.stringify(value, null, 2)
-        } catch {
-            return String(value)
-        }
-    }
 
     // Single place for evaluating input via the WASM module
     const evaluateWithMod = (mod: EdgeRulesMod, input: string): string => {
