@@ -42,6 +42,15 @@ body {
     background: #fff;
 }
 
+.header.bright {
+    background-color: #f8fbff;
+    background-image: radial-gradient(circle, var(--border) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(173, 209, 255, 0.18), rgba(255, 255, 255, 1));
+    background-size: 24px 24px, 100% 100%;
+    background-position: 0 0, 0 0;
+    background-repeat: repeat, no-repeat;
+}
+
 .header h1 {
     margin: 0 0 6px;
     font-size: 36px;
@@ -163,7 +172,7 @@ body {
 /* Footer */
 .footer {
     background: #111827; /* neutral-900 */
-    color: #e5e7eb;      /* neutral-200 */
+    color: #e5e7eb; /* neutral-200 */
     padding: 40px 0;
 }
 
@@ -325,7 +334,7 @@ pre {
 .example-row {
     display: flex;
     gap: 16px;
-    align-items: stretch;      /* makes all columns the same height */
+    align-items: stretch; /* makes all columns the same height */
     margin: 16px 0 28px;
     /* allow a full-width top row (description) above editors */
     flex-wrap: wrap;
@@ -393,7 +402,7 @@ pre {
 }
 
 .no-wrap {
-    white-space: pre !important;      /* keep lines intact */
+    white-space: pre !important; /* keep lines intact */
     word-break: normal !important;
     overflow-wrap: normal !important;
 }
@@ -404,15 +413,18 @@ pre {
         /* on small screens, stack naturally without wrap tricks */
         flex-direction: column;
     }
+
     /* reset the top row behavior when stacked */
     .example-row .top-row {
         flex: 0 0 auto;
         width: 100%;
     }
+
     .example-arrow {
         min-width: 0;
         padding: 0px 0;
     }
+
     .arrow-glyph {
         transform: rotate(90deg);
     }
