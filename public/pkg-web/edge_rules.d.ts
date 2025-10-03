@@ -1,22 +1,25 @@
 /* tslint:disable */
 /* eslint-disable */
 export function init_panic_hook(): void;
-export function evaluate_all(code: string): string;
-export function evaluate_expression(code: string): string;
-export function evaluate_field(code: string, field: string): string;
+export function evaluate_all(code: string): any;
+export function evaluate_expression(code: string): any;
+export function evaluate_field(code: string, field: string): any;
+export function evaluate_method(code: string, method: string, args: any): any;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly evaluate_all: (a: number, b: number) => [number, number];
-  readonly evaluate_expression: (a: number, b: number) => [number, number];
-  readonly evaluate_field: (a: number, b: number, c: number, d: number) => [number, number];
   readonly init_panic_hook: () => void;
+  readonly evaluate_all: (a: number, b: number) => any;
+  readonly evaluate_expression: (a: number, b: number) => any;
+  readonly evaluate_field: (a: number, b: number, c: number, d: number) => any;
+  readonly evaluate_method: (a: number, b: number, c: number, d: number, e: any) => any;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_export_2: WebAssembly.Table;
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_exn_store: (a: number) => void;
+  readonly __externref_table_alloc: () => number;
+  readonly __wbindgen_export_4: WebAssembly.Table;
   readonly __wbindgen_start: () => void;
 }
 

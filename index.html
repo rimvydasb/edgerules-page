@@ -21,7 +21,7 @@
       const bustWasm = typeof __ER_WASM_BUST__ !== 'undefined' ? __ER_WASM_BUST__ : '';
       const s = document.createElement('script');
       s.type = 'module';
-      s.src = `${base}pkg-web/loader.js${(bustJs || bustWasm) ? `?js=${bustJs}&wasm=${bustWasm}` : ''}`;
+      s.src = `${base}loader.js${(bustJs || bustWasm) ? `?js=${bustJs}&wasm=${bustWasm}` : ''}`;
       document.head.appendChild(s);
     </script>
     <script type="module" src="/src/main.tsx"></script>
