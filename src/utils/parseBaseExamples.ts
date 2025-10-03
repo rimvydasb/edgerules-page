@@ -100,9 +100,10 @@ export interface ContentMenuItem {
 
 /** Compute the app base URL from Vite env, normalized with trailing slash. */
 export function getBaseUrl(): string {
-    const env = (import.meta as unknown as { env?: Record<string, unknown> })?.env
-    const base = env ? (env['BASE_URL'] as unknown) : undefined
-    const val = typeof base === 'string' && base.length > 0 ? base : '/'
+    const globalBase = typeof globalThis !== 'undefined'
+        ? (globalThis as typeof globalThis & { __VITE_BASE_URL__?: unknown }).__VITE_BASE_URL__
+        : undefined
+    const val = typeof globalBase === 'string' && globalBase.length > 0 ? globalBase : '/'
     return val.endsWith('/') ? val : `${val}/`
 }
 
