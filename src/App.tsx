@@ -8,6 +8,29 @@ import type { BaseExample, Example } from './examples/types'
 import {fetchAndParseBaseExamples, formatWasmResult} from './utils/parseBaseExamples'
 import { CONTENT_PAGES } from './content/pages'
 
+const mapBoldSegments = (text: string, keyPrefix: string): React.ReactNode[] => {
+    if (!text.includes('**')) return [text]
+    const parts = text.split('**')
+    return parts.map((part, idx) => (
+        idx % 2 === 1
+            ? <strong key={`${keyPrefix}-strong-${idx}`}>{part}</strong>
+            : part
+    ))
+}
+
+const renderDescriptionContent = (desc: string, keyPrefix: string): React.ReactNode[] => {
+    if (!desc) return []
+    const paragraphs = desc.split(/\n\n+/)
+    return paragraphs.flatMap((paragraph, idx) => {
+        const normalized = paragraph.replace(/\n+/g, ' ')
+        const nodes = mapBoldSegments(normalized, `${keyPrefix}-${idx}`)
+        if (idx < paragraphs.length - 1) {
+            return [...nodes, <br key={`${keyPrefix}-br-${idx}`} />]
+        }
+        return nodes
+    })
+}
+
 export default function App() {
     const [lang] = useState<'javascript'>('javascript')
     const [wasmReady, setWasmReady] = useState(false)
@@ -169,7 +192,9 @@ export default function App() {
                             <section className="example-row">
                                 {/* description */}
                                 <div className="example-col example-output top-row">
-                                    <p className="example-desc">{ex.description}</p>
+                                    <p className="example-desc">
+                                        {renderDescriptionContent(ex.description, ex.id)}
+                                    </p>
                                 </div>
 
                                 {/* input editor */}
