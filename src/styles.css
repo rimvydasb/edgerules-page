@@ -114,9 +114,17 @@ body {
 }
 
 .header__menu li.active .header__menu-btn {
-    background: var(--text);
+    /*background: var(--text);*/
     color: #fff;
     border-color: var(--text);
+    background-color: #111827;
+    background-image: linear-gradient(
+            135deg,
+            #111827 0%, /* base dark */ #111827 40%, /* stable dark region */ rgba(30, 64, 175, 0.25) 50%, /* deep navy highlight */ #111827 60%, /* fade back to dark */ #111827 100% /* base dark end */
+    );
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    animation: footer-glow 20s ease-in-out infinite alternate;
 }
 
 .container {
@@ -197,7 +205,6 @@ body {
     animation: footer-glow 20s ease-in-out infinite alternate;
 }
 
-/* Moving deep-blue shimmer */
 @keyframes footer-glow {
     0% {
         background-position: 100% 0;
