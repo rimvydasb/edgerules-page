@@ -194,34 +194,25 @@ flatten([[1,2], [[3]], 4])
 
 ## sort
 
-Sorts list with comparator.
+Sorts list ascending or descending.
 
 ```edgerules
-sort([3,1,4,2], function(x,y) x<y)
+{
+    ascending: sort([3,1,2,4,0])
+    descending: sortDescending([3,1,2,4,0])
+}
 ```
 
 ## join
 
-Joins strings, ignores nulls.
+Join supports simple strings join without delimiter, with delimiter, and with delimiter and wrap.
 
 ```edgerules
-join(["a", null, "c"])
-```
-
-## join (with delimiter)
-
-Joins strings with delimiter.
-
-```edgerules
-join(["a","b","c"], ", ")
-```
-
-## join (with delimiter and wrap)
-
-Joins with delimiter and wraps result.
-
-```edgerules
-join(["a","b","c"], ", ", "[", "]")
+{
+    simple: join(["a","b","c"])
+    delimiter: join(["a","b","c"], ", ")
+    delimiterAndWrap: join(["a","b","c"], ", ", "[", "]")
+}
 ```
 
 ## isEmpty

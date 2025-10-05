@@ -73,7 +73,7 @@ Single or double quotes. Compare with = and <>.
     a: 'hello'
     b: "hello"
     equal: a = b
-    notEqual: 'A' <> 'B'
+    notEqual: a <> b
 }
 ```
 

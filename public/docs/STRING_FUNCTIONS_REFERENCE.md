@@ -112,22 +112,6 @@ Trim whitespace.
 trim("  hello  ")
 ```
 
-## uuid
-
-Generate UUID.
-
-```edgerules
-uuid()
-```
-
-## toBase64
-
-Encode to base64.
-
-```edgerules
-toBase64("FEEL")
-```
-
 ## regexReplace
 
 Regex replace.
@@ -205,7 +189,15 @@ lastIndexOf("Abcb", "b")
 Decode from base64.
 
 ```edgerules
-fromBase64("RkVFTA==")
+fromBase64("RWRnZVJ1bGVz")
+```
+
+## toBase64
+
+Encode to base64.
+
+```edgerules
+toBase64("EdgeRules")
 ```
 
 ## fromCharCode
