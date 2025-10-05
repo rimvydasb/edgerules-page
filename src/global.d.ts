@@ -1,7 +1,8 @@
 declare global {
   interface EdgeRulesMod {
     ready: Promise<boolean>
-    to_trace: (input: string) => string
+    evaluate_all: (input: string) => unknown
+    evaluate_expression: (expr: string) => unknown
   }
 
   interface Window {

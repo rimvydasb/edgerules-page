@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { parseBaseExamplesMarkdown, type ExampleBlock } from "../src/utils/parseBaseExamples";
 
 describe("BASE_EXAMPLES.md parsing (basic)", () => {
-    const mdPath = path.join(process.cwd(), "public", "BASE_EXAMPLES.md");
+    const mdPath = path.join(process.cwd(), "public", "docs/BASE_EXAMPLES.md");
     const markdown = fs.readFileSync(mdPath, "utf8");
     const blocks: ExampleBlock[] = parseBaseExamplesMarkdown(markdown);
 

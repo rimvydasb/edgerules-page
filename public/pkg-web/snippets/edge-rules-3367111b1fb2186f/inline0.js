@@ -8,6 +8,17 @@ export function __er_regex_replace(s, pattern, flags, repl) {
   }
 }
 
+export function __er_regex_split(s, pattern, flags) {
+  try {
+    const re = new RegExp(pattern, flags || 'g');
+    const SEP = "\u001F"; // Unit Separator as rarely-used delimiter
+    const parts = String(s).split(re).map(p => p.split(SEP).join(SEP + SEP));
+    return parts.join(SEP);
+  } catch (e) {
+    return "__er_err__:" + String(e);
+  }
+}
+
 export function __er_to_base64(s) {
   try {
     if (typeof btoa === 'function') {
