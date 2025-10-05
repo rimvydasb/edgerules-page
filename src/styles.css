@@ -43,13 +43,20 @@ body {
 }
 
 .header.bright {
-    background-color: #f8fbff;
-    background-image: radial-gradient(circle, var(--border) 1px, transparent 1px),
-    linear-gradient(135deg, rgba(173, 209, 255, 0.18), rgba(255, 255, 255, 1));
+    background-color: #ffffff;
+    background-image: radial-gradient(circle, #e5e5e5 1px, transparent 1px),
+    linear-gradient(
+            135deg,
+            rgba(173, 209, 255, 0.25) 0%,     /* blue start */
+            rgba(255, 255, 255, 0.9) 40%,     /* fade to white */
+            rgba(255, 200, 200, 0.35) 50%,    /* narrow pink band */
+            rgba(255, 255, 255, 0.9) 60%,     /* fade back to white */
+            rgba(173, 209, 255, 0.25) 100%    /* blue end */
+    );
     background-size: 24px 24px, 200% 100%;
     background-position: 0 0, 100% 0;
     background-repeat: repeat, no-repeat;
-    animation: gradient-move 8s ease-in-out infinite alternate;
+    animation: gradient-move 20s ease-in-out infinite alternate;
 }
 
 @keyframes gradient-move {
@@ -60,7 +67,6 @@ body {
         background-position: 0 0, 0 0;
     }
 }
-
 
 .header h1 {
     margin: 0 0 6px;
