@@ -523,7 +523,7 @@ pre {
 
 .playground-editor-shell .cm-editor .cm-scroller,
 .playground-output-shell .cm-editor .cm-scroller {
-    padding: 16px;
+    padding: 0px;
     overflow: auto;
 }
 
