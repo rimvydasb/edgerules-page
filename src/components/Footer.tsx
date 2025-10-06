@@ -1,10 +1,10 @@
 import React from 'react'
 
 import { CONTENT_PAGES } from '../content/pages'
-import { getBaseUrl } from '../utils/parseBaseExamples'
+import { getBaseUrl, isMarkdownContentMenuItem } from '../utils/parseBaseExamples'
 
 export default function Footer() {
-    const baseUrl = "https://github.com/rimvydasb/edgerules-page/blob/main/public/";
+    const baseUrl = getBaseUrl()
 
     return (
         <footer className="footer">
@@ -39,15 +39,15 @@ export default function Footer() {
                     <div className="footer__col">
                         <div className="footer__title">Markdown Reference</div>
                         <ul className="footer__list">
-                            {CONTENT_PAGES.map(({ contentReference }) => {
-                                const normalizedReference = contentReference.replace(/^\/+/, '')
+                            {CONTENT_PAGES.filter(isMarkdownContentMenuItem).map((item) => {
+                                const normalizedReference = item.contentReference.replace(/^\/+/, '')
                                 const href = `${baseUrl}${normalizedReference}`
                                 const documentName = normalizedReference.substring(
                                     normalizedReference.lastIndexOf('/') + 1,
                                 )
 
                                 return (
-                                    <li key={contentReference}>
+                                    <li key={item.contentReference}>
                                         <a className="footer__link" href={href} target="_blank" rel="noopener noreferrer">
                                             {documentName}
                                         </a>

@@ -93,9 +93,21 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
 }
 
 /** Public content menu configuration item. */
-export interface ContentMenuItem {
+export interface MarkdownContentMenuItem {
     menuTitle: string;
+    type?: 'markdown';
     contentReference: string; // relative path under public/, e.g., "BASE_EXAMPLES.md"
+}
+
+export interface PlaygroundContentMenuItem {
+    menuTitle: string;
+    type: 'playground';
+}
+
+export type ContentMenuItem = MarkdownContentMenuItem | PlaygroundContentMenuItem;
+
+export function isMarkdownContentMenuItem(item: ContentMenuItem): item is MarkdownContentMenuItem {
+    return (item as MarkdownContentMenuItem).contentReference !== undefined;
 }
 
 /** Compute the app base URL from Vite env, normalized with trailing slash. */
@@ -215,4 +227,3 @@ export function formatWasmResult(value: unknown): string {
         return String(value);
     }
 };
-
