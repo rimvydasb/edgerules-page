@@ -1,6 +1,11 @@
 import React from 'react'
 
+import { CONTENT_PAGES } from '../content/pages'
+import { getBaseUrl } from '../utils/parseBaseExamples'
+
 export default function Footer() {
+    const baseUrl = "https://github.com/rimvydasb/edgerules-page/blob/main/public/";
+
     return (
         <footer className="footer">
             <div className="footer__inner">
@@ -34,16 +39,21 @@ export default function Footer() {
                     <div className="footer__col">
                         <div className="footer__title">Markdown Reference</div>
                         <ul className="footer__list">
-                            <li>
-                                <a
-                                    className="footer__link"
-                                    href="https://github.com/rimvydasb/edgerules-page/blob/main/public/docs/BASE_EXAMPLES.md"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    BASE_EXAMPLES.md
-                                </a>
-                            </li>
+                            {CONTENT_PAGES.map(({ contentReference }) => {
+                                const normalizedReference = contentReference.replace(/^\/+/, '')
+                                const href = `${baseUrl}${normalizedReference}`
+                                const documentName = normalizedReference.substring(
+                                    normalizedReference.lastIndexOf('/') + 1,
+                                )
+
+                                return (
+                                    <li key={contentReference}>
+                                        <a className="footer__link" href={href} target="_blank" rel="noopener noreferrer">
+                                            {documentName}
+                                        </a>
+                                    </li>
+                                )
+                            })}
                         </ul>
                     </div>
 
@@ -82,4 +92,3 @@ export default function Footer() {
         </footer>
     )
 }
-
