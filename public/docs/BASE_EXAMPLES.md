@@ -1,7 +1,7 @@
 # Introduction
 
 **EdgeRules** expression language helps you to define business rules and calculations. 
-It is a simple, yet powerful language with a small set of concepts that you can combine to express complex logic.
+It is a simple, declarative, referentially transparent and type safe language with a small set of concepts that you can combine to express complex logic.
 Here are some interactive examples to get you started with JSON output.
 
 In the example below, we calculate the best 3-months in a row sales period.

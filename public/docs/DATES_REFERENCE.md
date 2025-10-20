@@ -20,8 +20,8 @@ Durations come in two shapes:
 - **period("P1Y2M3D")** carries years, months, and days (calendar-aware, like Java `Period`)
 - **duration("P2DT3H")** carries days, hours, minutes, seconds (clock duration)
 
-Periods and durations normalize automatically: **period("P18M")** behaves like **P1Y6M**, and **duration("PT90M")** prints as
-**PT1H30M**.
+Periods and durations normalize automatically: **period("P18M")** behaves like **P1Y6M**, and **duration("PT90M")** 
+prints as **PT1H30M**.
 
 ```edgerules
 {

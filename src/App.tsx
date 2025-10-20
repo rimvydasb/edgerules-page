@@ -71,6 +71,9 @@ export default function App() {
 
     // Single place for evaluating input via the WASM module
     const evaluateWithMod = (mod: EdgeRulesMod, input: string): string => {
+        const trimmed = input.trim()
+        if (trimmed.length === 0) return ''
+
         const nonEmptyLines = input.split(/\r?\n/).filter((l) => l.trim() !== '')
         const result = nonEmptyLines.length === 1
             ? mod.evaluate_expression(nonEmptyLines[0]!)
@@ -84,6 +87,9 @@ export default function App() {
         if (!mod) return items
 
         return items.map((ex): Example => {
+            if (ex.input.trim().length === 0) {
+                return {...ex, output: '', error: null}
+            }
             try {
                 const out = evaluateWithMod(mod, ex.input)
                 return {...ex, output: out, error: null}
@@ -145,13 +151,20 @@ export default function App() {
             return
         }
 
-        try {
-            const out = evaluateWithMod(mod, value)
-            setExamples(prev => prev.map(ex => ex.id === id ? {...ex, input: value, output: out, error: null} : ex))
-        } catch (err) {
-            const msg = (err as Error)?.message ?? String(err)
-            setExamples(prev => prev.map(ex => ex.id === id ? {...ex, input: value, output: '', error: msg} : ex))
-        }
+        setExamples(prev => prev.map(ex => {
+            if (ex.id !== id) return ex
+            const next: Example = {...ex, input: value}
+            if (value.trim().length === 0) {
+                return {...next, output: '', error: null}
+            }
+            try {
+                const out = evaluateWithMod(mod, value)
+                return {...next, output: out, error: null}
+            } catch (err) {
+                const msg = (err as Error)?.message ?? String(err)
+                return {...next, output: '', error: msg}
+            }
+        }))
     }
 
     const evaluatePlaygroundInput = (value: string) => {
@@ -279,62 +292,64 @@ export default function App() {
                     <div className="container__content">
                         {!wasmReady && !wasmError && <p>Loading WebAssembly…</p>}
                         {wasmError && <p style={{color: '#b91c1c'}}>WASM load error: {wasmError}</p>}
-                        {examples.map(ex => (
-                            <React.Fragment key={ex.id}>
-                                <div className="example-row-header">
-                                    <h3 className="example-title"># {ex.title}</h3>
-                                </div>
-
-                                <section className="example-row">
-                                    {/* description */}
-                                    <Description text={ex.description} id={ex.id}/>
-
-                                    {/* input editor */}
-                                    <div className="example-col example-editor">
-                                        <Editor
-                                            value={ex.input}
-                                            onValueChange={(v) => onChangeExample(ex.id, v)}
-                                            highlight={highlight}
-                                            padding={16}
-                                            textareaId={`editor-${ex.id}`}
-                                            className="container__editor editor"
-                                            preClassName={`language-${lang} no-wrap`}
-                                            textareaClassName="no-wrap"
-                                            style={{
-                                                fontFamily: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                                                fontSize: 12,
-                                                overflowX: 'auto',
-                                            }}
-                                        />
+                        {examples.map(ex => {
+                            const hasCode = ex.codeExample.trim().length > 0
+                            return (
+                                <React.Fragment key={ex.id}>
+                                    <div className="example-row-header">
+                                        <h3 className="example-title"># {ex.title}</h3>
                                     </div>
 
-                                    {/* arrow */}
-                                    <div className="example-col example-arrow" aria-hidden="true">
-                                        <div className="arrow-glyph">↦</div>
-                                    </div>
+                                    <section className={`example-row${hasCode ? '' : ' example-row--text-only'}`}>
+                                        <Description text={ex.description} id={ex.id}/>
 
-                                    {/* output editor */}
-                                    <div className="example-col example-output">
-                                        <Editor
-                                            value={ex.error ? `Error:\n${ex.error}` : ex.output}
-                                            onValueChange={() => {
-                                            }}
-                                            highlight={highlight}
-                                            padding={16}
-                                            readOnly
-                                            className="container__editor editor readonly"
-                                            preClassName={`language-${lang} no-wrap`}
-                                            textareaClassName="no-wrap"
-                                            style={{
-                                                fontFamily: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                                                fontSize: 12,
-                                                overflowX: 'auto',
-                                            }}
-                                        />
-                                    </div>
-                                </section>
-                            </React.Fragment>
-                        ))}
+                                        {hasCode && (
+                                            <>
+                                                <div className="example-col example-editor">
+                                                    <Editor
+                                                        value={ex.input}
+                                                        onValueChange={(v) => onChangeExample(ex.id, v)}
+                                                        highlight={highlight}
+                                                        padding={16}
+                                                        textareaId={`editor-${ex.id}`}
+                                                        className="container__editor editor"
+                                                        preClassName={`language-${lang} no-wrap`}
+                                                        textareaClassName="no-wrap"
+                                                        style={{
+                                                            fontFamily: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                                            fontSize: 12,
+                                                            overflowX: 'auto',
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                <div className="example-col example-arrow" aria-hidden="true">
+                                                    <div className="arrow-glyph">↦</div>
+                                                </div>
+
+                                                <div className="example-col example-output">
+                                                    <Editor
+                                                        value={ex.error ? `Error:\n${ex.error}` : ex.output}
+                                                        onValueChange={() => {}}
+                                                        highlight={highlight}
+                                                        padding={16}
+                                                        readOnly
+                                                        className="container__editor editor readonly"
+                                                        preClassName={`language-${lang} no-wrap`}
+                                                        textareaClassName="no-wrap"
+                                                        style={{
+                                                            fontFamily: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                                                            fontSize: 12,
+                                                            overflowX: 'auto',
+                                                        }}
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+                                    </section>
+                                </React.Fragment>
+                            )
+                        })}
                     </div>
 
                 )}

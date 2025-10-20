@@ -472,6 +472,18 @@ pre {
     font-size: 12px;
 }
 
+.example-desc__paragraph {
+    margin: 0 0 8px;
+}
+
+.example-desc__paragraph:last-child {
+    margin-bottom: 0;
+}
+
+.example-desc__line {
+    display: block;
+}
+
 .no-wrap {
     white-space: pre !important; /* keep lines intact */
     word-break: normal !important;

@@ -24,8 +24,18 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
     let codeLines: string[] = [];
     let fenceLang: string | null = null;
 
+    const hasPendingContent = (): boolean => {
+        if (codeLines.length > 0) return true;
+        return descriptionLines.some((line) => line.trim().length > 0);
+    };
+
     const pushBlock = (): void => {
-        const description = descriptionLines.join("\n").trim();
+        if (!hasPendingContent()) {
+            descriptionLines = [];
+            codeLines = [];
+            return;
+        }
+        const description = descriptionLines.join(" ");
         const codeExample = codeLines.join("\n");
         blocks.push({ pageTitle, sectionTitle, sectionSubtitle, description, codeExample });
         descriptionLines = [];
@@ -38,6 +48,7 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
         if (!inCode) {
             const m1 = line.match(/^#\s+(.+)/);
             if (m1 && m1[1]) {
+                pushBlock();
                 pageTitle = m1[1].trim();
                 sectionTitle = null;
                 sectionSubtitle = null;
@@ -47,6 +58,7 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
 
             const m2 = line.match(/^##\s+(.+)/);
             if (m2 && m2[1]) {
+                pushBlock();
                 sectionTitle = m2[1].trim();
                 sectionSubtitle = null;
                 descriptionLines = [];
@@ -55,6 +67,7 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
 
             const m3 = line.match(/^###\s+(.+)/);
             if (m3 && m3[1]) {
+                pushBlock();
                 sectionSubtitle = m3[1].trim();
                 descriptionLines = [];
                 continue;
@@ -86,15 +99,26 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
                 continue;
             }
 
-            const listMatch = line.match(/^\s*(?:[-*+]\s+|\d+\.\s+)(.+)$/);
+            // starts with -
+            const listMatch = line.match(/^\s*-\s+(.*)/);
             if (listMatch) {
-                descriptionLines.push(listMatch[1].trim());
+                // remove -
+                let trimmed = line.replace(/^\s*-\s+/, '• ');
+                descriptionLines.push(trimmed);
+                descriptionLines.push("\n\n\n");
+                continue;
+            }
+
+            if (line.trim() === "" && descriptionLines.length > 0) {
+                descriptionLines.push("\n\n\n");
                 continue;
             }
 
             descriptionLines.push(line);
         }
     }
+
+    pushBlock();
 
     return blocks;
 }
