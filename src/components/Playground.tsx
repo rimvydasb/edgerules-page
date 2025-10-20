@@ -24,6 +24,7 @@ function createInputExtensions(onDocChange: (value: string) => void) {
         highlightSpecialChars(),
         history(),
         drawSelection(),
+        EditorView.lineWrapping,
         EditorState.allowMultipleSelections.of(true),
         indentOnInput(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
@@ -43,6 +44,7 @@ function createOutputExtensions() {
         lineNumbers(),
         highlightSpecialChars(),
         drawSelection(),
+        EditorView.lineWrapping,
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         highlightActiveLine(),
         json(),
@@ -54,11 +56,31 @@ function createOutputExtensions() {
 function formatJsonLike(raw: string): string {
     const trimmed = raw.trim()
     if (!trimmed) return ''
+    const normalized = trimmed.replace(/\r\n?/g, '\n')
+
     try {
-        const parsed = JSON.parse(trimmed)
+        const parsed = JSON.parse(normalized)
+        if (typeof parsed === 'string') {
+            return parsed
+        }
         return JSON.stringify(parsed, null, 2)
     } catch {
-        return JSON.stringify(trimmed, null, 2)
+        try {
+            if (normalized.startsWith('"') && normalized.endsWith('"')) {
+                const unquoted = JSON.parse(normalized)
+                if (typeof unquoted === 'string') {
+                    return unquoted.replace(/\r\n?/g, '\n')
+                }
+            }
+        } catch {
+            // ignore, fall through to raw normalization
+        }
+
+        return normalized
+            .replace(/\\n/g, '\n')
+            .replace(/\\t/g, '\t')
+            .replace(/\\"/g, '"')
+            .replace(/\\\\/g, '\\')
     }
 }
 

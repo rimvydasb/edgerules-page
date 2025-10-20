@@ -21,6 +21,8 @@
 
     // All Decision Areas:
 
+    // Applicant Decisions
+  
     func applicantDecisions(applicant: Applicant, application): {
         func eligibilityDecision(applicantRecord): {
             rules: [
@@ -39,12 +41,16 @@
         eligibility: eligibilityDecision(applicantRecord)
     }
 
+    // Application Decisions
+
     func applicationDecisions(application: Application): {
         applicationRecord: {
             data: application
-            applicantsDecisions: for app in application.applicants return applicantDecisions(app, application).eligibility
+            applicantDecisions: for app in application.applicants return applicantDecisions(app, application)
         }
     }
+
+    // Example Input Data
 
     applicationResponse: applicationDecisions({
         applicationDate: date("2025-01-01")

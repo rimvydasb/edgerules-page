@@ -4,7 +4,7 @@
 It is a simple, yet powerful language with a small set of concepts that you can combine to express complex logic.
 Here are some interactive examples to get you started with JSON output.
 
-In the example below, we calculate the best 3-month sales period.
+In the example below, we calculate the best 3-months in a row sales period.
 You can edit the code and see the results immediately.
 
 ```edgerules
@@ -14,7 +14,7 @@ You can edit the code and see the results immediately.
     func sales3(month, sales): { 
         result: sales[month] + sales[month + 1] + sales[month + 2] 
     }
-    acc: for m in 1..(salesCount - 2) return sales3(m, sales).result
+    acc: for m in 0..(salesCount - 3) return sales3(m, sales).result
     best: max(acc)
 }
 ```
@@ -128,14 +128,14 @@ date("YYYY-MM-DD"), compare, add/sub durations, fields and helpers.
     d1: date("2017-05-03")
     d2: date("2017-05-04")
     compare: d1 < d2
-
     plusDays: d1 + duration("P1D")
-    minusMonths: date("2017-03-31") - duration("P1M")
-
+    beforeHalfDay: date("2017-03-31") - duration("PT12H")
+    minusMonth: date("2017-03-31") - period("P1M")
     y: d1.year
     mName: monthOfYear(d1)
     wName: dayOfWeek(d1)
     lastDom: lastDayOfMonth(date("2025-02-10"))
+    between: calendarDiff(date("1987-03-07"),d2)
 }
 ```
 
@@ -174,7 +174,7 @@ duration("ISO-8601"). Years–months and days–time kinds; use with dates/times
 
 ```edgerules
 {
-    ym: duration("P1Y6M")
+    ym: duration("P1D")
     dt: duration("P2DT3H")
     addToDate: date("2017-05-03") + ym
     subFromTime: time("12:00:00") - duration("PT30M")
@@ -183,7 +183,7 @@ duration("ISO-8601"). Years–months and days–time kinds; use with dates/times
 
 ## Special Values
 
-Operations may yield sentinel values like Missing/NotApplicable/NotFound.
+Operations may yield sentinel values like Missing/NotApplicable for certain situations.
 
 ```edgerules
 {

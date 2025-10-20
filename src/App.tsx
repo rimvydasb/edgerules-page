@@ -7,7 +7,7 @@ import Footer from './components/Footer'
 import Description from './components/Description'
 import Playground from './components/Playground'
 import type {BaseExample, Example} from './examples/types'
-import {fetchAndParseBaseExamples, formatWasmResult} from './utils/parseBaseExamples'
+import {fetchAndParseBaseExamples, fetchMarkdown, formatWasmResult, parseBaseExamplesMarkdown} from './utils/parseBaseExamples'
 import {CONTENT_PAGES} from './content/pages'
 
 export default function App() {
@@ -173,6 +173,67 @@ export default function App() {
         setPlaygroundInput(value)
         evaluatePlaygroundInput(value)
     }
+
+    useEffect(() => {
+        if (!isPlayground) return
+
+        let cancelled = false
+
+        const loadPlayground = async () => {
+            try {
+                const markdown = await fetchMarkdown('docs/PLAYGROUND.md')
+                if (cancelled) return
+                const blocks = parseBaseExamplesMarkdown(markdown)
+                const firstBlock = blocks.find((block) => block.codeExample.trim().length > 0)
+                if (!firstBlock) {
+                    throw new Error('Playground example missing in PLAYGROUND.md')
+                }
+                const nextValue = firstBlock.codeExample
+                setPlaygroundInput(nextValue)
+                setPlaygroundOutput('')
+                if (nextValue.trim() === '') {
+                    setPlaygroundError(null)
+                    return
+                }
+
+                const mod = wasmRef.current
+                if (!mod) {
+                    setPlaygroundError(null)
+                    return
+                }
+
+                try {
+                    const nonEmptyLines = nextValue.split(/\r?\n/).filter((line) => line.trim() !== '')
+                    const result = nonEmptyLines.length === 1
+                        ? mod.evaluate_expression(nonEmptyLines[0]!)
+                        : mod.evaluate_all(nextValue)
+                    const formatted = formatWasmResult(result)
+                    setPlaygroundOutput(formatted)
+                    setPlaygroundError(null)
+                } catch (err) {
+                    const message = (err as Error)?.message ?? String(err)
+                    setPlaygroundOutput('')
+                    setPlaygroundError(message)
+                }
+            } catch (err) {
+                if (cancelled) return
+                const message = (err as Error)?.message ?? String(err)
+                setPlaygroundInput('')
+                setPlaygroundOutput('')
+                setPlaygroundError(message)
+            }
+        }
+
+        loadPlayground().catch((err: unknown) => {
+            if (cancelled) return
+            const message = (err as Error)?.message ?? String(err)
+            setPlaygroundError(message)
+        })
+
+        return () => {
+            cancelled = true
+        }
+    }, [isPlayground, activeItem])
 
     useEffect(() => {
         if (!isPlayground || !wasmReady) return
