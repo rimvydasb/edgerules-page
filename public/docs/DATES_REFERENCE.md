@@ -20,8 +20,8 @@ Durations come in two shapes:
 - **period("P1Y2M3D")** carries years, months, and days (calendar-aware, like Java `Period`)
 - **duration("P2DT3H")** carries days, hours, minutes, seconds (clock duration)
 
-Periods and durations normalize automatically: `period("P18M")` behaves like `P1Y6M`, and `duration("PT90M")` prints as
-`PT1H30M`.
+Periods and durations normalize automatically: **period("P18M")** behaves like **P1Y6M**, and **duration("PT90M")** prints as
+**PT1H30M**.
 
 ```edgerules
 {
@@ -33,6 +33,9 @@ Periods and durations normalize automatically: `period("P18M")` behaves like `P1
 ```
 
 ## Accessing Components
+
+**weekdayIso** follows ISO numbering (Monday = 1 ... Sunday = 7). The **.time** accessor on a datetime returns a concrete
+time(...) value formatted as HH:MM:SS.0.
 
 ```edgerules
 {
@@ -55,10 +58,9 @@ Periods and durations normalize automatically: `period("P18M")` behaves like `P1
 }
 ```
 
-`weekdayIso` follows ISO numbering (Monday = 1 ... Sunday = 7). The `.time` accessor on a datetime returns a concrete
-`time(...)` value formatted as `HH:MM:SS.0`.
-
 ## Comparing Temporal Values
+
+Mixing incompatible types (for example, comparing a `date` to a `time` or a `duration`) produces a linking error.
 
 ```edgerules
 {
@@ -82,9 +84,15 @@ Periods and durations normalize automatically: `period("P18M")` behaves like `P1
 }
 ```
 
-Mixing incompatible types (for example, comparing a `date` to a `time` or a `duration`) produces a linking error.
-
 ## Arithmetic with Durations
+
+Subtraction between two temporal values always yields a `duration`. Adding or subtracting a `duration` keeps the same
+type for times/datetimes, while dates become datetimes because the time component appears.
+
+Use `period(...)` when you need calendar-aware math: check **calendarDiffs** for calendar-based date subtraction.
+
+In these examples, `subtractDates` evaluates to `PT16H`, `dateMinusDate` to `PT24H`, `addToDate` to
+`2017-05-04 0:00:00.0`, and `subtractFromDate` to `2017-05-02 0:00:00.0`.
 
 ```edgerules
 {
@@ -101,18 +109,12 @@ Mixing incompatible types (for example, comparing a `date` to a `time` or a `dur
 }
 ```
 
-Subtraction between two temporal values always yields a `duration`. Adding or subtracting a `duration` keeps the same
-type for times/datetimes, while dates become datetimes because the time component appears.
-
-`duration("P1Y")` and other year/month fields are rejected at runtime; use `period(...)` when you need calendar-aware
-math.
-
-In these examples, `subtractDates` evaluates to `PT16H`, `dateMinusDate` to `PT24H`, `addToDate` to
-`2017-05-04 0:00:00.0`, and `subtractFromDate` to `2017-05-02 0:00:00.0`.
-
 ## Period Arithmetic
 
 Use periods when you need month-aware math (end-of-month rules, anniversaries, etc.).
+
+Periods cannot be combined with durations in arithmetic. Attempting `period('P4D') + duration('PT5H')` or subtracting a
+period from a duration raises a linking error.
 
 ```edgerules
 {
@@ -126,10 +128,10 @@ Use periods when you need month-aware math (end-of-month rules, anniversaries, e
 }
 ```
 
-Periods cannot be combined with durations in arithmetic. Attempting `period('P4D') + duration('PT5H')` or subtracting a
-period from a duration raises a linking error.
-
 ## Calendar Helpers
+
+- **calendarDiff** always returns a `period`, preserving sign. `monthOfYear` and `dayOfWeek` return English names.
+- **lastDayOfMonth** yields the day number for the month (28 for February 2025, 29 when leap year rules apply).
 
 ```edgerules
 {
@@ -144,9 +146,6 @@ period from a duration raises a linking error.
     lastDom: lastDayOfMonth(date("2025-02-10"))
 }
 ```
-
-`calendarDiff` always returns a `period`, preserving sign. `monthOfYear` and `dayOfWeek` return English names.
-`lastDayOfMonth` yields the day number for the month (28 for February 2025, 29 when leap year rules apply).
 
 ## Restrictions and Tips
 

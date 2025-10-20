@@ -20,16 +20,23 @@ const renderDescriptionContent = (desc: string, keyPrefix: string): React.ReactN
     const result: React.ReactNode[] = []
     const paragraphs = desc.split(/\n\n+/)
 
-    paragraphs.forEach((paragraph, idx) => {
-        const normalized = paragraph.replace(/\n+/g, ' ')
-        const nodes = mapBoldSegments(normalized, `${keyPrefix}-${idx}`)
-        nodes.forEach((node) => {
-            result.push(node)
+    paragraphs.forEach((paragraph, paragraphIdx) => {
+        const lines = paragraph.split(/\n+/)
+        lines.forEach((line, lineIdx) => {
+            const trimmed = line.trim()
+            if (!trimmed) return
+            const nodes = mapBoldSegments(trimmed, `${keyPrefix}-${paragraphIdx}-${lineIdx}`)
+            nodes.forEach((node) => {
+                result.push(node)
+            })
+            if (lineIdx < lines.length - 1) {
+                result.push(<br key={`${keyPrefix}-linebr-${paragraphIdx}-${lineIdx}`} />)
+            }
         })
 
-        if (idx < paragraphs.length - 1) {
-            result.push(<br key={`${keyPrefix}-br-${idx}-a`} />)
-            result.push(<br key={`${keyPrefix}-br-${idx}-b`} />)
+        if (paragraphIdx < paragraphs.length - 1) {
+            result.push(<br key={`${keyPrefix}-para-${paragraphIdx}-a`} />)
+            result.push(<br key={`${keyPrefix}-para-${paragraphIdx}-b`} />)
         }
     })
 

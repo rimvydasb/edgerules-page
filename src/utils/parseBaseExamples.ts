@@ -85,6 +85,13 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
             if (line.trim() === "" && descriptionLines.length === 0) {
                 continue;
             }
+
+            const listMatch = line.match(/^\s*(?:[-*+]\s+|\d+\.\s+)(.+)$/);
+            if (listMatch) {
+                descriptionLines.push(listMatch[1].trim());
+                continue;
+            }
+
             descriptionLines.push(line);
         }
     }
