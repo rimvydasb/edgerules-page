@@ -37,9 +37,9 @@ Types can be nested and combined.
 
 ## Argument Casting
 
-During runtime complex objects will be cast to the expected type when passed as function arguments.
-Casting is fault-tolerant and works in this way: fields that do not exist in object definition are filtered out, 
-and fields that exist in definition, but not in object, are set to Special Value.
+At runtime, complex objects are cast to the expected type when passed as function arguments.
+Casting is fault-tolerant and works in this way: fields that do not exist in the object definition are filtered out,
+and fields that exist in the definition, but not in the object, are set to Special Value.
 This approach brings predictable behavior and is fault-tolerant with unexpected data in production.
 
 ```edgerules
@@ -61,12 +61,12 @@ This approach brings predictable behavior and is fault-tolerant with unexpected 
 
 ## Explicit Casting
 
-During runtime complex objects can be explicitly cast to the expected type using `as` operator.
-Behavior is the same as with argument casting: fields that do not exist in object definition are filtered out,
-and fields that exist in definition, but not in object, are set to Special Value.
-Use explicit casting when you want to ensure that object conforms to the expected type.
+During runtime, complex objects can be explicitly cast to the expected type using the `as` operator.
+Behavior is the same as with argument casting: fields that do not exist in the object definition are filtered out.
+And fields that exist in the definition, but not in the object, are set to Special Value.
+Use explicit casting when you want to ensure that the object conforms to the expected type.
 This method is fault-tolerant and will not throw errors on missing or extra fields.
-Casting will not convert field types - if field type does not match the expected type, the execution will be terminated.
+Casting will not convert field types - if the field type does not match the expected type, the execution will be terminated.
 
 ```edgerules
 {

@@ -1,4 +1,4 @@
-# User Defined Functions Reference
+# User-Defined Functions Reference
 
 ## Simple Functions
 
@@ -17,7 +17,7 @@ If argument types are not specified, they will be inferred during runtime.
 
 ## Functions as Enclosed Context
 
-Inside a function it is possible to deeply nest other functions and variables.
+Inside a function, it is possible to nest other functions and variables deeply.
 Functions cannot access variables from the outer scope - this makes
 each function an enclosed context that can be reused and reasoned about independently.
 

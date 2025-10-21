@@ -1,8 +1,10 @@
 # Date & Time Reference
 
-**EdgeRules** supports ISO-8601 style dates, times, datetimes, and durations. All values are local-time only (no offsets
-or zones) and operations are deterministic so they can run on the edge. Use the primitives below to express schedules,
-remainders, and temporal rules without pulling in clock state.
+**EdgeRules** supports the following ISO-8601 style types: **date**, **time**, **datetime**, **duration** and **period**.
+All values are local-time only (no offsets or zones), and all date and time-related operations are deterministic, 
+so they can be executed on the edge environments where timezone or current time information is not available or is not
+reliable. Add the current time information to the EdgeRules context (or decision service request) if needed
+to execute schedules, remainders, and temporal rules.
 
 ```edgerules
 {
@@ -106,7 +108,7 @@ Mixing incompatible types (for example, comparing a `date` to a `time` or a `dur
 ## Arithmetic with Durations
 
 Subtraction between two temporal values always yields a `duration`. Adding or subtracting a `duration` keeps the same
-type for times/datetimes, while dates become datetimes because the time component appears.
+type for time/datetime, while dates become datetime because the time component appears.
 
 Use `period(...)` when you need calendar-aware math: check **calendarDiffs** for calendar-based date subtraction.
 
@@ -174,3 +176,4 @@ period from a duration raises a linking error.
 - Temporal addition works left-to-right. `date + duration` becomes a datetime, so chain carefully when building rules.
 - Normalize output with `toString(...)` if you need canonical ISO-8601 text (e.g., `toString(duration("PT90M"))` yields
   `"PT1H30M"` and `toString(datetime("2024-06-05T07:30:00"))` yields `"2024-06-05T07:30:00"`).
+- Send current date/time values in the EdgeRules context when needed for scheduling or time-based logic.
