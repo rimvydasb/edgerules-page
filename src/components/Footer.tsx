@@ -4,7 +4,7 @@ import { CONTENT_PAGES } from '../content/pages'
 import { getBaseUrl, isMarkdownContentMenuItem } from '../utils/parseBaseExamples'
 
 export default function Footer() {
-    const baseUrl = getBaseUrl()
+    const baseUrl = "https://github.com/rimvydasb/edgerules-page/blob/main/public/"
 
     return (
         <footer className="footer">
