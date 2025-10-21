@@ -264,7 +264,7 @@ export default function App() {
                             <li key={`${item.menuTitle}-${idx}`} className={idx === activeIndex ? 'active' : ''}>
                                 <button
                                     type="button"
-                                    className="header__menu-btn"
+                                    className={`header__menu-btn${item.type === 'playground' ? ' header__menu-btn--playground' : ''}`}
                                     aria-current={idx === activeIndex ? 'page' : undefined}
                                     onClick={() => setActiveIndex(idx)}
                                 >
