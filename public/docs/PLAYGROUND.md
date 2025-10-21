@@ -23,7 +23,10 @@
 
     // Applicant Decisions
   
-    func applicantDecisions(applicant: Applicant, application): {
+    func applicantDecisions(applicant: Applicant, applicationRecord): {
+
+        // Decisions
+      
         func eligibilityDecision(applicantRecord): {
             rules: [
                 {name: "INC_CHECK"; rule: applicantRecord.data.income > applicantRecord.data.expense * 2}
@@ -33,10 +36,13 @@
             firedRules: for invalid in rules[rule = false] return invalid.name
             status: if count(rules) = 0 then "ELIGIBLE" else "INELIGIBLE"
         }
+
+        // Record
+  
         applicantRecord: {
-            checkDate: application.applicationDate
+            checkDate: applicationRecord.data.applicationDate
             data: applicant
-            age: application.applicationDate - applicant.birthDate
+            age: applicationRecord.data.applicationDate - applicant.birthDate
         }
         eligibility: eligibilityDecision(applicantRecord)
     }
@@ -44,10 +50,13 @@
     // Application Decisions
 
     func applicationDecisions(application: Application): {
+
+        // Record
+      
         applicationRecord: {
-            data: application
-            applicantDecisions: for app in application.applicants return applicantDecisions(app, application)
+            data: application            
         }
+        applicantDecisions: for app in application.applicants return applicantDecisions(app, applicationRecord)
     }
 
     // Example Input Data
