@@ -20,7 +20,7 @@ Durations come in two shapes:
 - **period("P1Y2M3D")** carries years, months, and days (calendar-aware, like Java `Period`)
 - **duration("P2DT3H")** carries days, hours, minutes, seconds (clock duration)
 
-Periods and durations normalize automatically: **period("P18M")** behaves like **P1Y6M**, and **duration("PT90M")** 
+Periods and durations normalize automatically: **period("P18M")** behaves like **P1Y6M**, and **duration("PT90M")**
 prints as **PT1H30M**.
 
 ```edgerules
@@ -34,8 +34,16 @@ prints as **PT1H30M**.
 
 ## Accessing Components
 
-**weekdayIso** follows ISO numbering (Monday = 1 ... Sunday = 7). The **.time** accessor on a datetime returns a concrete
-time(...) value formatted as HH:MM:SS.0.
+Each primitive exposes normalized, read-only fields:
+
+- **date**: year, month, day, weekday (ISO Monday=1 … Sunday=7)
+- **time**: hour, minute, second
+- **datetime**: year, month, day, hour, minute, second, weekday, time, date
+- **duration**: days, hours, minutes, seconds, totalSeconds, totalMinutes, totalHours
+- **period**: years, months, days, totalMonths, totalDays
+
+Datetime `.time` returns a concrete `time(...)` value, while `.date` returns a `date(...)`. All fields are normalized
+(`duration("PT90M").hours == 1`, `period("P18M").years == 1`).
 
 ```edgerules
 {
@@ -54,6 +62,17 @@ time(...) value formatted as HH:MM:SS.0.
         month: datetime("2016-12-09T15:37:00").month
         hour: datetime("2016-12-09T15:37:00").hour
         timeOnly: datetime("2016-12-09T15:37:00").time
+        dateOnly: datetime("2016-12-09T15:37:00").date
+    }
+    durationParts: {
+        hours: duration("PT90M").hours       // 1
+        minutes: duration("PT90M").minutes   // 30
+        totalHours: duration("PT90M").totalHours // 1.5
+    }
+    periodParts: {
+        years: period("P18M").years          // 1
+        months: period("P18M").months        // 6
+        totalMonths: period("P18M").totalMonths // 18
     }
 }
 ```
@@ -92,13 +111,13 @@ type for times/datetimes, while dates become datetimes because the time componen
 Use `period(...)` when you need calendar-aware math: check **calendarDiffs** for calendar-based date subtraction.
 
 In these examples, `subtractDates` evaluates to `PT16H`, `dateMinusDate` to `PT24H`, `addToDate` to
-`2017-05-04 0:00:00.0`, and `subtractFromDate` to `2017-05-02 0:00:00.0`.
+`2017-05-04T00:00:00`, and `subtractFromDate` to `2017-05-02T00:00:00`.
 
 ```edgerules
 {
     subtractDates: datetime("2020-01-02T00:00:00") - datetime("2020-01-01T08:00:00")
     dateMinusDate: date("2020-01-02") - date("2020-01-01")
-    addToDate: date("2017-05-03") + duration("P1D")
+    addToDate: date("2017-05-03") + duration("P1D")        // datetime result
     subtractFromDate: date("2017-05-03") - duration("P1D")
     datetimePlus: datetime("2016-12-09T15:37:00") + duration("PT23H")
     timeMath: {
@@ -154,4 +173,4 @@ period from a duration raises a linking error.
 - Periods are unordered; only `=` and `<>` are valid comparisons.
 - Temporal addition works left-to-right. `date + duration` becomes a datetime, so chain carefully when building rules.
 - Normalize output with `toString(...)` if you need canonical ISO-8601 text (e.g., `toString(duration("PT90M"))` yields
-  `"PT1H30M"`).
+  `"PT1H30M"` and `toString(datetime("2024-06-05T07:30:00"))` yields `"2024-06-05T07:30:00"`).
