@@ -15,7 +15,7 @@ If argument types are not specified, they will be inferred during runtime.
 }
 ```
 
-## Functions as Eclosed Context
+## Functions as Enclosed Context
 
 Inside a function it is possible to deeply nest other functions and variables.
 Functions cannot access variables from the outer scope - this makes

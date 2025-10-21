@@ -1,47 +1,26 @@
 import React from 'react'
 
+import { CONTENT_PAGES } from '../content/pages'
+import { getBaseUrl, isMarkdownContentMenuItem } from '../utils/parseBaseExamples'
+
 export default function Footer() {
+    const baseUrl = getBaseUrl()
+
     return (
         <footer className="footer">
             <div className="footer__inner">
                 <div className="footer__grid">
                     <div className="footer__col">
-                        <div className="footer__title">About</div>
+                        <div className="footer__title">GitHub</div>
                         <ul className="footer__list">
                             <li>
                                 <a
                                     className="footer__link"
-                                    href="https://rimvydasb.github.io/edgerules-page/"
+                                    href="https://github.com/rimvydasb/edgerules"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
-                                    GitHub Pages
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    className="footer__link"
-                                    href="https://github.com/rimvydasb/edgerules-page/issues"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Support & feedback
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div className="footer__col">
-                        <div className="footer__title">Community</div>
-                        <ul className="footer__list">
-                            <li>
-                                <a
-                                    className="footer__link"
-                                    href="https://github.com/rimvydasb"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    GitHub Profile
+                                    EdgeRules Core
                                 </a>
                             </li>
                             <li>
@@ -51,9 +30,30 @@ export default function Footer() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
-                                    Repository
+                                    EdgeRules Page
                                 </a>
                             </li>
+                        </ul>
+                    </div>
+
+                    <div className="footer__col">
+                        <div className="footer__title">Markdown Reference</div>
+                        <ul className="footer__list">
+                            {CONTENT_PAGES.filter(isMarkdownContentMenuItem).map((item) => {
+                                const normalizedReference = item.contentReference.replace(/^\/+/, '')
+                                const href = `${baseUrl}${normalizedReference}`
+                                const documentName = normalizedReference.substring(
+                                    normalizedReference.lastIndexOf('/') + 1,
+                                )
+
+                                return (
+                                    <li key={item.contentReference}>
+                                        <a className="footer__link" href={href} target="_blank" rel="noopener noreferrer">
+                                            {documentName}
+                                        </a>
+                                    </li>
+                                )
+                            })}
                         </ul>
                     </div>
 
@@ -63,21 +63,21 @@ export default function Footer() {
                             <li>
                                 <a
                                     className="footer__link"
-                                    href="https://github.com/rimvydasb/edgerules-page/blob/main/README.md"
+                                    href="https://github.com/rimvydasb/edgerules/blob/main/LICENSE"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
-                                    README
+                                    License
                                 </a>
                             </li>
                             <li>
                                 <a
                                     className="footer__link"
-                                    href="https://github.com/rimvydasb/edgerules-page/blob/main/LICENSE"
+                                    href="https://www.linkedin.com/in/rimvydasb/"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
-                                    License
+                                    Contacts
                                 </a>
                             </li>
                         </ul>
@@ -92,4 +92,3 @@ export default function Footer() {
         </footer>
     )
 }
-

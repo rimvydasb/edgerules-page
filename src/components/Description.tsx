@@ -17,31 +17,34 @@ const mapBoldSegments = (text: string, keyPrefix: string): React.ReactNode[] => 
 
 const renderDescriptionContent = (desc: string, keyPrefix: string): React.ReactNode[] => {
     if (!desc) return []
-    const result: React.ReactNode[] = []
+
     const paragraphs = desc.split(/\n\n+/)
+        .map((paragraph) => paragraph.trim())
+        .filter((paragraph) => paragraph.length > 0)
 
-    paragraphs.forEach((paragraph, idx) => {
-        const normalized = paragraph.replace(/\n+/g, ' ')
-        const nodes = mapBoldSegments(normalized, `${keyPrefix}-${idx}`)
-        nodes.forEach((node) => {
-            result.push(node)
-        })
+    return paragraphs.map((paragraph, paragraphIdx) => {
+        const lines = paragraph.split(/\n+/)
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0)
 
-        if (idx < paragraphs.length - 1) {
-            result.push(<br key={`${keyPrefix}-br-${idx}-a`} />)
-            result.push(<br key={`${keyPrefix}-br-${idx}-b`} />)
-        }
+        return (
+            <div className="example-desc__paragraph" key={`${keyPrefix}-paragraph-${paragraphIdx}`}>
+                {lines.map((line, lineIdx) => (
+                    <span className="example-desc__line" key={`${keyPrefix}-line-${paragraphIdx}-${lineIdx}`}>
+                        {mapBoldSegments(line, `${keyPrefix}-${paragraphIdx}-${lineIdx}`)}
+                    </span>
+                ))}
+            </div>
+        )
     })
-
-    return result
 }
 
 export default function Description({ text, id }: DescriptionProps) {
     return (
         <div className="example-col example-output top-row">
-            <p className="example-desc">
+            <div className="example-desc">
                 {renderDescriptionContent(text, id)}
-            </p>
+            </div>
         </div>
     )
 }

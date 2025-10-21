@@ -187,9 +187,10 @@ duplicateValues([1,2,3,2,1])
 ## flatten
 
 Flattens nested lists.
+However, only homogeneous lists are supported.
 
 ```edgerules
-flatten([[1,2], [[3]], 4])
+flatten([[1,2], [3], [4]])
 ```
 
 ## sort
