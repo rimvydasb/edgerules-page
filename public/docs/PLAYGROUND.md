@@ -19,50 +19,63 @@
         expense: <number>;
     }
 
-    // All Decision Areas:
-
-    // Applicant Decisions
+    // Applicant Level Decisions
   
-    func applicantDecisions(applicant: Applicant, applicationRecord): {
+    func applicantDecisions(applicant: Applicant, applicationRecord): {        
 
-        // Decisions
+         func CreditScore(age, income): {
+            bins: [
+                {name: "AGE_BIN"; score: 20; condition: if age <= 25 then score else 0}
+                {name: "AGE_BIN"; score: 30; condition: if age > 25 then score else 0}
+                {name: "INC_BIN"; score: 30; condition: if income >= 1500 then score else 0}                
+            ]
+            totalScore: sum(for bin in bins return bin.condition)
+        }
       
-        func eligibilityDecision(applicantRecord): {
+        func EligibilityDecision(applicantRecord, creditScore): {
             rules: [
                 {name: "INC_CHECK"; rule: applicantRecord.data.income > applicantRecord.data.expense * 2}
                 {name: "MIN_INCOM"; rule: applicantRecord.data.income > 1000}
-                {name: "AGE_CHECK"; rule: applicantRecord.data.birthDate + period('P18Y') <= applicantRecord.checkDate}
+                {name: "AGE_CHECK"; rule: applicantRecord.age >= 18}
+                {name: "SCREDIT_S"; rule: creditScore.totalScore > 10}
             ]
             firedRules: for invalid in rules[rule = false] return invalid.name
             status: if count(rules) = 0 then "ELIGIBLE" else "INELIGIBLE"
         }
 
-        // Record
+        // Applicant Record
   
         applicantRecord: {
-            checkDate: applicationRecord.data.applicationDate
             data: applicant
-            age: applicationRecord.data.applicationDate - applicant.birthDate
+            age: calendarDiff(applicant.birthDate, applicationRecord.data.applicationDate.date).years
         }
-        eligibility: eligibilityDecision(applicantRecord)
+        
+        // Applicant Decisions
+        
+        creditScore: CreditScore(12,1000)
+        eligibility: EligibilityDecision(applicantRecord, creditScore)
     }
 
-    // Application Decisions
+    // Application Level Decisions
 
     func applicationDecisions(application: Application): {
 
-        // Record
+        // Application Record
       
         applicationRecord: {
             data: application            
         }
+        
+        // Application Decisions
+        
         applicantDecisions: for app in application.applicants return applicantDecisions(app, applicationRecord)
+        finalDecision: if (count(applicantDecisions[eligibility.status="INELIGIBLE"]) > 0) then "DECLINE" else "APPROVE"
     }
 
     // Example Input Data
 
     applicationResponse: applicationDecisions({
-        applicationDate: date("2025-01-01")
+        applicationDate: datetime("2025-01-01T15:43:56")
         propertyValue: 100000
         loanAmount: 80000
         applicants: [
