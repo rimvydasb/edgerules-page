@@ -15,8 +15,7 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "verbatimModuleSyntax": true,
-    "types": ["vite/client"]
+    "types": ["vite/client", "jest", "node"]
   },
-  "include": ["src"]
+  "include": ["src", "tests"]
 }
-

@@ -39,7 +39,7 @@ This is a short description line.
 `;
         const smallBlocks = parseBaseExamplesMarkdown(smallMd);
         expect(smallBlocks.length).toBe(1);
-        const b = smallBlocks[0];
+        const b = smallBlocks[0]!; // non-null assertion for TS strict checks
         // Should be an instance of the exported ExampleBlock class
         expect(b).toBeInstanceOf(ExampleBlock);
         expect(b.pageTitle).toBe("Test Page");
@@ -57,7 +57,7 @@ This is a short description line.
         const md = `# Page\n## Section\nSome desc\n\noutput:\nThis is output line 1\nThis is output line 2\n\n\`\`\`edgerules\n{ x: 2 }\n\`\`\`\n`;
         const res = parseBaseExamplesMarkdown(md);
         expect(res.length).toBe(1);
-        const b = res[0];
+        const b = res[0]!; // non-null assertion
         expect(b.description).toContain("Some desc");
         // getOutput() is a method on ExampleBlock
         // @ts-ignore access to method for test
