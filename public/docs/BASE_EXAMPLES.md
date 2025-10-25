@@ -29,9 +29,7 @@ You can edit the code and see the results immediately.
 }
 ```
 
-## Numbers
-
-### Arithmetic
+## Arithmetic
 
 Integers and reals with +, -, *, /, ^ and unary -.
 
@@ -46,7 +44,19 @@ Integers and reals with +, -, *, /, ^ and unary -.
 }
 ```
 
-### Comparisons
+**output:**
+```json
+{
+  "summing": 5.2,
+  "subtracting": 9,
+  "product": 42,
+  "division": 2.5,
+  "power": 256,
+  "negate": -6
+}
+```
+
+## Comparisons
 
 Numeric comparisons: <, <=, >, >=, =, <>.',
 ```edgerules
@@ -57,6 +67,18 @@ Numeric comparisons: <, <=, >, >=, =, <>.',
     greaterEquals: 4 >= 4
     simpleEquals: 5 = 5
     negate: 6 <> 7
+}
+```
+
+**output:**
+```json
+{
+  "summing": 5.2,
+  "subtracting": 9,
+  "product": 42,
+  "division": 2.5,
+  "power": 256,
+  "negate": -6
 }
 ```
 

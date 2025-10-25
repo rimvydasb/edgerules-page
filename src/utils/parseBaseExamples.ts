@@ -3,43 +3,46 @@ import type { BaseExample } from '../examples/types'
 export class ExampleBlock {
     pageTitle: string | null;
     sectionTitle: string | null;
-    sectionSubtitle: string | null;
 
     private _descriptionLines: string[];
     private _codeLines: string[];
+    private _outputLines: string[];
 
-    constructor(pageTitle: string | null = null, sectionTitle: string | null = null, sectionSubtitle: string | null = null) {
+    constructor(pageTitle: string | null = null, sectionTitle: string | null = null) {
         this.pageTitle = pageTitle;
         this.sectionTitle = sectionTitle;
-        this.sectionSubtitle = sectionSubtitle;
         this._descriptionLines = [];
         this._codeLines = [];
+        this._outputLines = [];
     }
 
     static createEmpty(): ExampleBlock {
-        return new ExampleBlock(null, null, null);
+        return new ExampleBlock(null, null);
     }
 
-    static create({ pageTitle = null, sectionTitle = null, sectionSubtitle = null, description = '', codeExample = '' }: {
+    static create({ pageTitle = null, sectionTitle = null, description = '', codeExample = '', output = '' }: {
         pageTitle?: string | null;
         sectionTitle?: string | null;
-        sectionSubtitle?: string | null;
         description?: string;
         codeExample?: string;
+        output?: string;
     }): ExampleBlock {
-        const b = new ExampleBlock(pageTitle, sectionTitle, sectionSubtitle);
+        const b = new ExampleBlock(pageTitle, sectionTitle);
         if (description && description.length > 0) {
-            // Keep description as single string blocks (parser uses joined strings)
             b.setDescription(description);
         }
         if (codeExample && codeExample.length > 0) {
             b.setCode(codeExample);
+        }
+        if (output && output.length > 0) {
+            b.setOutput(output);
         }
         return b;
     }
 
     hasContent(): boolean {
         if (this._codeLines.length > 0) return true;
+        if (this._outputLines.some((l) => l.trim().length > 0)) return true;
         return this._descriptionLines.some((l) => l.trim().length > 0);
     }
 
@@ -53,7 +56,6 @@ export class ExampleBlock {
     }
 
     setDescription(description: string): void {
-        // Replace internal lines with a single-line description (parser-specific formatting)
         this._descriptionLines = [description];
     }
 
@@ -73,6 +75,18 @@ export class ExampleBlock {
         this._codeLines = [];
     }
 
+    addOutputLine(line: string): void {
+        this._outputLines.push(line);
+    }
+
+    setOutput(output: string): void {
+        this._outputLines = output.split('\n');
+    }
+
+    clearOutput(): void {
+        this._outputLines = [];
+    }
+
     trimCodeEdges(): void {
         while (this._codeLines.length > 0 && (this._codeLines[0] ?? '').trim() === '') this._codeLines.shift();
         while (this._codeLines.length > 0 && (this._codeLines[this._codeLines.length - 1] ?? '').trim() === '') this._codeLines.pop();
@@ -84,6 +98,10 @@ export class ExampleBlock {
 
     get codeExample(): string {
         return this._codeLines.join('\n');
+    }
+
+    getOutput(): string {
+        return this._outputLines.join('\n');
     }
 }
 
@@ -97,34 +115,21 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
 
     let pageTitle: string | null = null;
     let sectionTitle: string | null = null;
-    let sectionSubtitle: string | null = null;
     let inCode = false;
     let isOutputSection = false;
     let fenceLang: string | null = null;
+    let pendingPush = false; // true when we've just closed an edgerules block and await possible output
 
     // Current block we're filling
     let current = ExampleBlock.createEmpty();
 
     const pushBlock = (): void => {
+        // If there's nothing meaningful in this block (no desc/code/output), just reset context
         if (!current.hasContent()) {
-            // reset current to pick up new context
-            current = ExampleBlock.createEmpty();
-            // ensure context propagates
-            current.pageTitle = pageTitle;
-            current.sectionTitle = sectionTitle;
-            current.sectionSubtitle = sectionSubtitle;
-            return;
-        }
-
-        if (isOutputSection) {
-            // Clear any collected description/code lines, as they belong to output
-            current.clearDescription();
-            current.clearCode();
-            isOutputSection = false;
             current = ExampleBlock.createEmpty();
             current.pageTitle = pageTitle;
             current.sectionTitle = sectionTitle;
-            current.sectionSubtitle = sectionSubtitle;
+            pendingPush = false;
             return;
         }
 
@@ -132,75 +137,122 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
         blocks.push(ExampleBlock.create({
             pageTitle: current.pageTitle,
             sectionTitle: current.sectionTitle,
-            sectionSubtitle: current.sectionSubtitle,
             description: current.description,
             codeExample: current.codeExample,
+            output: current.getOutput(),
         }));
 
         // reset
         current = ExampleBlock.createEmpty();
         current.pageTitle = pageTitle;
         current.sectionTitle = sectionTitle;
-        current.sectionSubtitle = sectionSubtitle;
+        pendingPush = false;
     };
 
     for (let i = 0; i < lines.length; i += 1) {
         const line = (lines[i] ?? '');
 
-        // Consolidated heading matcher for #, ##, ### to reduce repetition
-        if (!inCode) {
-            const heading = line.match(/^(#{1,3})\s+(.+)/);
-            if (heading && heading[1] && heading[2]) {
-                pushBlock();
-                const level = heading[1].length; // 1,2,3
-                const text = heading[2].trim();
-                if (level === 1) {
-                    pageTitle = text;
-                    sectionTitle = null;
-                    sectionSubtitle = null;
-                } else if (level === 2) {
-                    sectionTitle = text;
-                    sectionSubtitle = null;
-                } else {
-                    sectionSubtitle = text;
-                }
-                isOutputSection = false;
-                current.pageTitle = pageTitle;
-                current.sectionTitle = sectionTitle;
-                current.sectionSubtitle = sectionSubtitle;
-                continue;
-            }
-        }
-
-        if (!inCode) {
-            // contains only the word "output:" or "**output:**"
-            if (line.match(/^output:\s*$/i) || line.match(/^\*\*output:\*\*\s*$/i)) {
-                // ignore everything that is below output
-                isOutputSection = true;
-                continue;
-            }
-        }
-
-        const fenceOpen = line.match(/^```(\w+)?\s*$/);
-        if (fenceOpen) {
+        const fenceMatch = line.match(/^```(\w+)?\s*$/);
+        if (fenceMatch) {
+            const lang = (fenceMatch[1] ?? '').toLowerCase() || null;
             if (!inCode) {
+                // Opening fence
                 inCode = true;
-                fenceLang = (fenceOpen[1] ?? '').toLowerCase() || null;
+                fenceLang = lang;
+                // If this is a JSON fence and we are in an output section, treat it as output collection
+                // Otherwise if it's edgerules, we collect code. Other languages we'll treat as generic code (ignored by UI).
                 continue;
             }
 
-            // closing fence
-            inCode = false;
-            if (fenceLang === 'edgerules') {
-                current.trimCodeEdges();
+            // Closing fence. Which kind did we close?
+            if (!fenceLang) {
+                // unknown fence, just toggle
+                inCode = false;
+                fenceLang = null;
+                continue;
             }
-            pushBlock();
+
+            // If we were collecting JSON output inside an output section, closing it finalizes the block
+            if (fenceLang === 'json' && isOutputSection) {
+                inCode = false;
+                fenceLang = null;
+                // finished collecting output for this block -> finalize
+                pushBlock();
+                isOutputSection = false;
+                continue;
+            }
+
+            // If we were collecting edgerules code, closing it means code is complete; defer pushing in case output follows
+            if (fenceLang === 'edgerules') {
+                inCode = false;
+                fenceLang = null;
+                current.trimCodeEdges();
+                pendingPush = true; // wait for possible output: marker
+                continue;
+            }
+
+            // Any other fence closed - just stop collecting inCode
+            inCode = false;
             fenceLang = null;
             continue;
         }
 
+        if (!inCode) {
+            // Only support # and ## as structural headings. ### is treated as regular content.
+            const heading = line.match(/^(#{1,2})\s+(.+)/);
+            if (heading && heading[1] && heading[2]) {
+                // If we had a pending block (closed edgerules with no output), finalize it now
+                if (pendingPush) {
+                    pushBlock();
+                }
+
+                // Finalize previous non-empty block before updating context
+                pushBlock();
+                const level = heading[1].length; // 1 or 2
+                const text = heading[2].trim();
+                if (level === 1) {
+                    pageTitle = text;
+                    sectionTitle = null;
+                } else {
+                    sectionTitle = text;
+                }
+                isOutputSection = false;
+                current.pageTitle = pageTitle;
+                current.sectionTitle = sectionTitle;
+                continue;
+            }
+
+            // contains only the word "output:" or "**output:**"
+            if (line.match(/^output:\s*$/i) || line.match(/^\*\*output:\*\*\s*$/i)) {
+                // start collecting output lines for the current block
+                isOutputSection = true;
+                // clear any previous output capture for this block
+                current.clearOutput();
+                continue;
+            }
+
+            // If we were waiting for output but encounter non-output content, finalize the pending block now
+            if (pendingPush && !isOutputSection && line.trim() !== '') {
+                pushBlock();
+            }
+
+            if (isOutputSection) {
+                // non-fenced output lines (rare); collect as output text
+                current.addOutputLine(line);
+                continue;
+            }
+        }
+
         if (inCode) {
-            current.addCodeLine(line);
+            // Route code lines based on the active fence language
+            if (fenceLang === 'edgerules') {
+                current.addCodeLine(line);
+            } else if (fenceLang === 'json' && isOutputSection) {
+                current.addOutputLine(line);
+            } else {
+                // other fenced content - treat as description/code: append to description to be safe
+                current.addDescriptionLine(line);
+            }
         } else {
             if (line.trim() === '' && !current.hasContent()) {
                 continue;
@@ -221,11 +273,15 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
                 continue;
             }
 
+            // By default treat the line as description text. This also captures ### headings (no subtitle support).
             current.addDescriptionLine(line);
         }
     }
 
-    pushBlock();
+    // If we ended while waiting for output or after closing edgerules with no further content, finalize
+    if (pendingPush || current.hasContent()) {
+        pushBlock();
+    }
 
     return blocks;
 }
@@ -266,10 +322,10 @@ export function toSlug(s: string): string {
 export function mapBlocksToBaseExamples(blocks: ExampleBlock[]): BaseExample[] {
     return blocks.map((b, idx): BaseExample => {
         const title = b.sectionTitle
-            ? (b.sectionSubtitle ? `${b.sectionTitle} · ${b.sectionSubtitle}` : b.sectionTitle)
+            ? b.sectionTitle
             : (b.pageTitle ?? `Example ${idx + 1}`)
         const idBase = b.sectionTitle
-            ? [b.sectionTitle, b.sectionSubtitle].filter(Boolean).join(' ')
+            ? b.sectionTitle
             : (b.pageTitle ?? `example-${idx + 1}`)
         const id = toSlug(idBase)
         return { id, title, description: b.description, codeExample: b.codeExample }
