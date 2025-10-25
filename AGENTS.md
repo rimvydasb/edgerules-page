@@ -11,6 +11,13 @@
 - Run dev: `npm run dev`
 - Build: `npm run build` (output in `dist/`)
 
+## Maintenance
+
+```bash
+ncu -u            # update dependencies
+npm install       # install updated deps
+```
+
 ## GitHub Pages
 
 - GitHub Actions builds and deploys `main` to GitHub Pages.
