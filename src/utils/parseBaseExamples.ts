@@ -1,11 +1,90 @@
 import type { BaseExample } from '../examples/types'
 
-export interface ExampleBlock {
+export class ExampleBlock {
     pageTitle: string | null;
     sectionTitle: string | null;
     sectionSubtitle: string | null;
-    description: string;
-    codeExample: string;
+
+    private _descriptionLines: string[];
+    private _codeLines: string[];
+
+    constructor(pageTitle: string | null = null, sectionTitle: string | null = null, sectionSubtitle: string | null = null) {
+        this.pageTitle = pageTitle;
+        this.sectionTitle = sectionTitle;
+        this.sectionSubtitle = sectionSubtitle;
+        this._descriptionLines = [];
+        this._codeLines = [];
+    }
+
+    static createEmpty(): ExampleBlock {
+        return new ExampleBlock(null, null, null);
+    }
+
+    static create({ pageTitle = null, sectionTitle = null, sectionSubtitle = null, description = '', codeExample = '' }: {
+        pageTitle?: string | null;
+        sectionTitle?: string | null;
+        sectionSubtitle?: string | null;
+        description?: string;
+        codeExample?: string;
+    }): ExampleBlock {
+        const b = new ExampleBlock(pageTitle, sectionTitle, sectionSubtitle);
+        if (description && description.length > 0) {
+            // Keep description as single string blocks (parser uses joined strings)
+            b.setDescription(description);
+        }
+        if (codeExample && codeExample.length > 0) {
+            b.setCode(codeExample);
+        }
+        return b;
+    }
+
+    hasContent(): boolean {
+        if (this._codeLines.length > 0) return true;
+        return this._descriptionLines.some((l) => l.trim().length > 0);
+    }
+
+    // Helpers used by the parser
+    addDescriptionLine(line: string): void {
+        this._descriptionLines.push(line);
+    }
+
+    addBlankParagraph(): void {
+        this._descriptionLines.push('\n\n\n');
+    }
+
+    setDescription(description: string): void {
+        // Replace internal lines with a single-line description (parser-specific formatting)
+        this._descriptionLines = [description];
+    }
+
+    clearDescription(): void {
+        this._descriptionLines = [];
+    }
+
+    addCodeLine(line: string): void {
+        this._codeLines.push(line);
+    }
+
+    setCode(code: string): void {
+        this._codeLines = code.split('\n');
+    }
+
+    clearCode(): void {
+        this._codeLines = [];
+    }
+
+    trimCodeEdges(): void {
+        while (this._codeLines.length > 0 && (this._codeLines[0] ?? '').trim() === '') this._codeLines.shift();
+        while (this._codeLines.length > 0 && (this._codeLines[this._codeLines.length - 1] ?? '').trim() === '') this._codeLines.pop();
+    }
+
+    get description(): string {
+        return this._descriptionLines.join(' ');
+    }
+
+    get codeExample(): string {
+        return this._codeLines.join('\n');
+    }
 }
 
 /**
@@ -19,57 +98,85 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
     let pageTitle: string | null = null;
     let sectionTitle: string | null = null;
     let sectionSubtitle: string | null = null;
-    let descriptionLines: string[] = [];
     let inCode = false;
-    let codeLines: string[] = [];
+    let isOutputSection = false;
     let fenceLang: string | null = null;
 
-    const hasPendingContent = (): boolean => {
-        if (codeLines.length > 0) return true;
-        return descriptionLines.some((line) => line.trim().length > 0);
-    };
+    // Current block we're filling
+    let current = ExampleBlock.createEmpty();
 
     const pushBlock = (): void => {
-        if (!hasPendingContent()) {
-            descriptionLines = [];
-            codeLines = [];
+        if (!current.hasContent()) {
+            // reset current to pick up new context
+            current = ExampleBlock.createEmpty();
+            // ensure context propagates
+            current.pageTitle = pageTitle;
+            current.sectionTitle = sectionTitle;
+            current.sectionSubtitle = sectionSubtitle;
             return;
         }
-        const description = descriptionLines.join(" ");
-        const codeExample = codeLines.join("\n");
-        blocks.push({ pageTitle, sectionTitle, sectionSubtitle, description, codeExample });
-        descriptionLines = [];
-        codeLines = [];
+
+        if (isOutputSection) {
+            // Clear any collected description/code lines, as they belong to output
+            current.clearDescription();
+            current.clearCode();
+            isOutputSection = false;
+            current = ExampleBlock.createEmpty();
+            current.pageTitle = pageTitle;
+            current.sectionTitle = sectionTitle;
+            current.sectionSubtitle = sectionSubtitle;
+            return;
+        }
+
+        // push a copy of current to avoid later mutation
+        blocks.push(ExampleBlock.create({
+            pageTitle: current.pageTitle,
+            sectionTitle: current.sectionTitle,
+            sectionSubtitle: current.sectionSubtitle,
+            description: current.description,
+            codeExample: current.codeExample,
+        }));
+
+        // reset
+        current = ExampleBlock.createEmpty();
+        current.pageTitle = pageTitle;
+        current.sectionTitle = sectionTitle;
+        current.sectionSubtitle = sectionSubtitle;
     };
 
     for (let i = 0; i < lines.length; i += 1) {
-        const line = (lines[i] ?? "");
+        const line = (lines[i] ?? '');
+
+        // Consolidated heading matcher for #, ##, ### to reduce repetition
+        if (!inCode) {
+            const heading = line.match(/^(#{1,3})\s+(.+)/);
+            if (heading && heading[1] && heading[2]) {
+                pushBlock();
+                const level = heading[1].length; // 1,2,3
+                const text = heading[2].trim();
+                if (level === 1) {
+                    pageTitle = text;
+                    sectionTitle = null;
+                    sectionSubtitle = null;
+                } else if (level === 2) {
+                    sectionTitle = text;
+                    sectionSubtitle = null;
+                } else {
+                    sectionSubtitle = text;
+                }
+                isOutputSection = false;
+                current.pageTitle = pageTitle;
+                current.sectionTitle = sectionTitle;
+                current.sectionSubtitle = sectionSubtitle;
+                continue;
+            }
+        }
 
         if (!inCode) {
-            const m1 = line.match(/^#\s+(.+)/);
-            if (m1 && m1[1]) {
-                pushBlock();
-                pageTitle = m1[1].trim();
-                sectionTitle = null;
-                sectionSubtitle = null;
-                descriptionLines = [];
-                continue;
-            }
-
-            const m2 = line.match(/^##\s+(.+)/);
-            if (m2 && m2[1]) {
-                pushBlock();
-                sectionTitle = m2[1].trim();
-                sectionSubtitle = null;
-                descriptionLines = [];
-                continue;
-            }
-
-            const m3 = line.match(/^###\s+(.+)/);
-            if (m3 && m3[1]) {
-                pushBlock();
-                sectionSubtitle = m3[1].trim();
-                descriptionLines = [];
+            // contains only the word "output:" or "**output:**"
+            if (line.match(/^output:\s*$/i) || line.match(/^\*\*output:\*\*\s*$/i)) {
+                // ignore everything that is below output
+                isOutputSection = true;
                 continue;
             }
         }
@@ -82,10 +189,10 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
                 continue;
             }
 
+            // closing fence
             inCode = false;
             if (fenceLang === 'edgerules') {
-                while (codeLines.length > 0 && (codeLines[0] ?? '').trim() === '') codeLines.shift();
-                while (codeLines.length > 0 && (codeLines[codeLines.length - 1] ?? '').trim() === '') codeLines.pop();
+                current.trimCodeEdges();
             }
             pushBlock();
             fenceLang = null;
@@ -93,28 +200,28 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
         }
 
         if (inCode) {
-            codeLines.push(line);
+            current.addCodeLine(line);
         } else {
-            if (line.trim() === "" && descriptionLines.length === 0) {
+            if (line.trim() === '' && !current.hasContent()) {
                 continue;
             }
 
             // starts with -
             const listMatch = line.match(/^\s*-\s+(.*)/);
             if (listMatch) {
-                // remove -
+                // remove - and replace with bullet
                 let trimmed = line.replace(/^\s*-\s+/, '• ');
-                descriptionLines.push(trimmed);
-                descriptionLines.push("\n\n\n");
+                current.addDescriptionLine(trimmed);
+                current.addBlankParagraph();
                 continue;
             }
 
-            if (line.trim() === "" && descriptionLines.length > 0) {
-                descriptionLines.push("\n\n\n");
+            if (line.trim() === '' && current.hasContent()) {
+                current.addBlankParagraph();
                 continue;
             }
 
-            descriptionLines.push(line);
+            current.addDescriptionLine(line);
         }
     }
 
@@ -257,4 +364,4 @@ export function formatWasmResult(value: unknown): string {
     } catch {
         return String(value);
     }
-};
+}

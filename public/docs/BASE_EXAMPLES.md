@@ -19,6 +19,16 @@ You can edit the code and see the results immediately.
 }
 ```
 
+**output:**
+```json
+{
+  "sales": [10, 20, 8, 7, 1, 10, 6, 78, 0, 8, 0, 8],
+  "salesCount": 12,
+  "acc": [38, 35, 16, 18, 17, 94, 84, 86, 8, 16],
+  "best": 94
+}
+```
+
 ## Numbers
 
 ### Arithmetic

@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { parseBaseExamplesMarkdown, type ExampleBlock } from "../src/utils/parseBaseExamples";
+import { parseBaseExamplesMarkdown, ExampleBlock } from "../src/utils/parseBaseExamples";
 
 describe("BASE_EXAMPLES.md parsing (basic)", () => {
     const mdPath = path.join(process.cwd(), "public", "docs/BASE_EXAMPLES.md");
@@ -27,5 +27,32 @@ describe("BASE_EXAMPLES.md parsing (basic)", () => {
             expect(typeof b.codeExample).toBe("string");
             expect(b.codeExample.length).toBeGreaterThan(0);
         }
+    });
+
+    test("parses inline markdown string into ExampleBlock instances", () => {
+        const smallMd = `# Test Page
+## Test Section
+### Test Subtitle
+This is a short description line.
+
+\`\`\`edgerules
+{
+  a: 1
+}
+\`\`\`
+`;
+        const smallBlocks = parseBaseExamplesMarkdown(smallMd);
+        expect(smallBlocks.length).toBe(1);
+        const b = smallBlocks[0];
+        // Should be an instance of the exported ExampleBlock class
+        expect(b).toBeInstanceOf(ExampleBlock);
+        expect(b.pageTitle).toBe("Test Page");
+        expect(b.sectionTitle).toBe("Test Section");
+        expect(b.sectionSubtitle).toBe("Test Subtitle");
+        expect(typeof b.description).toBe("string");
+        expect(b.description).toContain("short description");
+        expect(typeof b.codeExample).toBe("string");
+        expect(b.codeExample).toContain("a: 1");
+        expect(b.hasContent()).toBe(true);
     });
 });
