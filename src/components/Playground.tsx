@@ -88,7 +88,7 @@ function buildOutputDoc(params: { wasmError: string | null; wasmReady: boolean; 
     const { wasmError, wasmReady, error, output } = params
     if (wasmError) return JSON.stringify({ error: wasmError }, null, 2)
     if (!wasmReady) return JSON.stringify({ status: 'loading' }, null, 2)
-    if (error) return JSON.stringify({ error }, null, 2)
+    if (error) return error
     return formatJsonLike(output)
 }
 
