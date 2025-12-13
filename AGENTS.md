@@ -4,6 +4,8 @@
 - Content comes from Markdown files in `public/` and is parsed at runtime.
 - Examples are evaluated in-browser via the EdgeRules WebAssembly module.
 
+> Do not run the dev server. Run npm run build to verify the code instead.
+
 ## Dev
 
 - Prerequisites: Node 20+ and npm.

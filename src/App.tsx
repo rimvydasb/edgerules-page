@@ -69,16 +69,28 @@ export default function App() {
         }
     }, [])
 
-    // Single place for evaluating input via the WASM module
-    const evaluateWithMod = (mod: EdgeRulesMod, input: string): string => {
+    const evaluateWithMod = (mod: EdgeRulesMod, input: string): { output: string, isError: boolean } => {
         const trimmed = input.trim()
-        if (trimmed.length === 0) return ''
+        if (trimmed.length === 0) {
+            return { output: '', isError: false }
+        }
 
-        const nonEmptyLines = input.split(/\r?\n/).filter((l) => l.trim() !== '')
-        const result = nonEmptyLines.length === 1
-            ? mod.evaluate_expression(nonEmptyLines[0]!)
-            : mod.evaluate_all(input)
-        return formatWasmResult(result)
+        try {
+            const nonEmptyLines = input.split(/\r?\n/).filter((l) => l.trim() !== '')
+            const result = nonEmptyLines.length === 1
+                ? mod.evaluate_expression(nonEmptyLines[0]!)
+                : mod.evaluate_all(input)
+            return { output: formatWasmResult(result), isError: false }
+        } catch (err: unknown) {
+            if (typeof err === 'object' && err !== null && !(err instanceof Error)) {
+                const anyObj = err as any;
+                if (anyObj.stage === 'linking') {
+                    delete anyObj.message;
+                }
+                return { output: formatWasmResult(anyObj), isError: true }
+            }
+            return { output: formatWasmResult(err), isError: true }
+        }
     }
 
     // Helper to compute outputs for current examples
@@ -88,14 +100,10 @@ export default function App() {
 
         return items.map((ex): Example => {
             if (ex.input.trim().length === 0) {
-                return {...ex, output: '', error: null}
+                return { ...ex, output: '', isError: false }
             }
-            try {
-                const out = evaluateWithMod(mod, ex.input)
-                return {...ex, output: out, error: null}
-            } catch (err) {
-                return {...ex, output: '', error: (err as Error)?.message ?? String(err)}
-            }
+            const { output, isError } = evaluateWithMod(mod, ex.input)
+            return { ...ex, output, isError }
         })
     }
 
@@ -125,7 +133,7 @@ export default function App() {
                     ...e,
                     input: e.codeExample,
                     output: '',
-                    error: null
+                    isError: false,
                 }))
                 if (!cancelled) {
                     setExamples(() => {
@@ -153,17 +161,12 @@ export default function App() {
 
         setExamples(prev => prev.map(ex => {
             if (ex.id !== id) return ex
-            const next: Example = {...ex, input: value}
+            const next: Example = { ...ex, input: value }
             if (value.trim().length === 0) {
-                return {...next, output: '', error: null}
+                return { ...next, output: '', isError: false }
             }
-            try {
-                const out = evaluateWithMod(mod, value)
-                return {...next, output: out, error: null}
-            } catch (err) {
-                const msg = (err as Error)?.message ?? String(err)
-                return {...next, output: '', error: msg}
-            }
+            const { output, isError } = evaluateWithMod(mod, value)
+            return { ...next, output, isError }
         }))
     }
 
@@ -171,15 +174,9 @@ export default function App() {
         const mod = wasmRef.current
         if (!mod) return
 
-        try {
-            const out = evaluateWithMod(mod, value)
-            setPlaygroundOutput(out)
-            setPlaygroundError(null)
-        } catch (err) {
-            const msg = (err as Error)?.message ?? String(err)
-            setPlaygroundOutput('')
-            setPlaygroundError(msg)
-        }
+        const { output, isError } = evaluateWithMod(mod, value)
+        setPlaygroundOutput(output)
+        setPlaygroundError(isError ? output : null)
     }
 
     const onChangePlayground = (value: string) => {
@@ -215,19 +212,9 @@ export default function App() {
                     return
                 }
 
-                try {
-                    const nonEmptyLines = nextValue.split(/\r?\n/).filter((line) => line.trim() !== '')
-                    const result = nonEmptyLines.length === 1
-                        ? mod.evaluate_expression(nonEmptyLines[0]!)
-                        : mod.evaluate_all(nextValue)
-                    const formatted = formatWasmResult(result)
-                    setPlaygroundOutput(formatted)
-                    setPlaygroundError(null)
-                } catch (err) {
-                    const message = (err as Error)?.message ?? String(err)
-                    setPlaygroundOutput('')
-                    setPlaygroundError(message)
-                }
+                const { output, isError } = evaluateWithMod(mod, nextValue)
+                setPlaygroundOutput(output)
+                setPlaygroundError(isError ? output : null)
             } catch (err) {
                 if (cancelled) return
                 const message = (err as Error)?.message ?? String(err)
@@ -329,7 +316,7 @@ export default function App() {
 
                                                 <div className="example-col example-output">
                                                     <Editor
-                                                        value={ex.error ? `Error:\n${ex.error}` : ex.output}
+                                                        value={ex.output}
                                                         onValueChange={() => {}}
                                                         highlight={highlight}
                                                         padding={16}
