@@ -19,9 +19,17 @@ You can edit the code and see the results immediately.
 }
 ```
 
-## Numbers
+**output:**
+```json
+{
+  "sales": [10, 20, 8, 7, 1, 10, 6, 78, 0, 8, 0, 8],
+  "salesCount": 12,
+  "acc": [38, 35, 16, 18, 17, 94, 84, 86, 8, 16],
+  "best": 94
+}
+```
 
-### Arithmetic
+## Arithmetic
 
 Integers and reals with +, -, *, /, ^ and unary -.
 
@@ -36,7 +44,19 @@ Integers and reals with +, -, *, /, ^ and unary -.
 }
 ```
 
-### Comparisons
+**output:**
+```json
+{
+  "summing": 5.2,
+  "subtracting": 9,
+  "product": 42,
+  "division": 2.5,
+  "power": 256,
+  "negate": -6
+}
+```
+
+## Comparisons
 
 Numeric comparisons: <, <=, >, >=, =, <>.',
 ```edgerules
@@ -47,6 +67,18 @@ Numeric comparisons: <, <=, >, >=, =, <>.',
     greaterEquals: 4 >= 4
     simpleEquals: 5 = 5
     negate: 6 <> 7
+}
+```
+
+**output:**
+```json
+{
+  "lower": true,
+  "lowerEquals": true,
+  "greater": true,
+  "greaterEquals": true,
+  "simpleEquals": true,
+  "negate": true
 }
 ```
 
@@ -65,6 +97,18 @@ Booleans true/false and logical operators not/and/or/xor.
 }
 ```
 
+**output:**
+```json
+{
+  "a": true,
+  "b": false,
+  "allTrue": true,
+  "anyTrue": true,
+  "justOne": true,
+  "negateComp": true
+}
+```
+
 ## Strings
 Single or double quotes. Compare with = and <>.
 
@@ -74,6 +118,16 @@ Single or double quotes. Compare with = and <>.
     b: "hello"
     equal: a = b
     notEqual: a <> b
+}
+```
+
+**output:**
+```json
+{
+  "a": "hello",
+  "b": "hello",
+  "equal": true,
+  "notEqual": false
 }
 ```
 
@@ -92,19 +146,109 @@ Indexing, filtering, and numeric built-ins sum/max/count; find returns index or 
     idxOf7: find(nums, 7)
 }
 ```
+
+**output:**
+```json
+{
+  "nums": [1, 5, 12, 7],
+  "first": 1,
+  "filtered": [12, 7],
+  "sumAll": 25,
+  "maxAll": 12,
+  "countAll": 4,
+  "idxOf7": 3
+}
+```
+
+## Filters
+
+Filters are defined within brackets [...] after a list where ... represents each item.
+Object fields can be accessed with dot notation.
+
+```edgerules
+{
+    vals: [10, 15, 20, 25, 30]
+    over20: vals[... > 20]
+    below20: vals[not ... > 20]
+    between: vals[(... > 10) and (... <= 25)]
+    complex: [{a: 1}, {a: 2}][a > 1]
+    nested: [{a: {b: 1}}, {a: {b: 2}}][a.b > 1]
+}
+```
+
+**output:**
+```json
+{
+  "vals": [
+    10,
+    15,
+    20,
+    25,
+    30
+  ],
+  "over20": [
+    25,
+    30
+  ],
+  "below20": [
+    10,
+    15,
+    20
+  ],
+  "between": [
+    15,
+    20,
+    25
+  ],
+  "complex": [
+    {
+      "a": 2
+    }
+  ],
+  "nested": [
+    {
+      "a": {
+        "b": 2
+      }
+    }
+  ]
+}
+```
+
 ## Ranges
 
 Inclusive integer ranges a..b; use in loops and built-ins.
 
 ```edgerules
 {
-    r: 1..5
+    range: 1..5
     doubled: for n in 1..5 return n * 2
     sumR: sum(1..5)
     maxR: max(1..5)
     countR: count(1..5)
 }
 ```
+
+**output:**
+```json
+{
+  "range": {
+    "start": 1,
+    "endExclusive": 6
+  },
+  "doubled": [
+    2,
+    4,
+    6,
+    8,
+    10
+  ],
+  "sumR": 15,
+  "maxR": 5,
+  "countR": 5
+}
+```
+
 ## Object (Context)
 
 Named fields with references and nesting.
@@ -116,6 +260,17 @@ Named fields with references and nesting.
         born: 1815
     }
     ageNow: 2025 - person.born
+}
+```
+
+**output:**
+```json
+{
+  "person": {
+    "first": "Ada",
+    "born": 1815
+  },
+  "ageNow": 210
 }
 ```
 
@@ -139,6 +294,23 @@ date("YYYY-MM-DD"), compare, add/sub durations, fields and helpers.
 }
 ```
 
+**output:**
+```json
+{
+  "d1": "2017-05-03",
+  "d2": "2017-05-04",
+  "compare": true,
+  "plusDays": "2017-05-04 0:00:00.0",
+  "beforeHalfDay": "2017-03-30 12:00:00.0",
+  "minusMonth": "2017-02-28",
+  "y": 2017,
+  "mName": "May",
+  "wName": "Wednesday",
+  "lastDom": 28,
+  "between": "P30Y1M27D"
+}
+```
+
 ## Time
 
 time("hh:mm:ss"), compare, +/- duration, and fields.
@@ -150,6 +322,17 @@ time("hh:mm:ss"), compare, +/- duration, and fields.
     diff: t1 - t2
     plusMin: t2 + duration("PT45M")
     hour: t1.hour
+}
+```
+
+**output:**
+```json
+{
+  "t1": "13:10:30.0",
+  "t2": "10:00:00.0",
+  "diff": "PT3H10M30S",
+  "plusMin": "10:45:00.0",
+  "hour": 13
 }
 ```
 
@@ -168,6 +351,18 @@ datetime("YYYY-MM-DDThh:mm:ss"), compare, +/- duration, fields.
 }
 ```
 
+**output:**
+```json
+{
+  "dt1": "2017-05-03 13:10:30.0",
+  "dt2": "2017-05-01 10:00:00.0",
+  "diff": "P2DT3H10M30S",
+  "plus": "2017-05-05 16:10:30.0",
+  "timePart": "13:10:30.0",
+  "weekday": 3
+}
+```
+
 ## Duration
 
 duration("ISO-8601"). Years–months and days–time kinds; use with dates/times.
@@ -181,6 +376,16 @@ duration("ISO-8601"). Years–months and days–time kinds; use with dates/times
 }
 ```
 
+**output:**
+```json
+{
+  "ym": "P1D",
+  "dt": "P2DT3H",
+  "addToDate": "2017-05-04 0:00:00.0",
+  "subFromTime": "11:30:00.0"
+}
+```
+
 ## Special Values
 
 Operations may yield sentinel values like Missing/NotApplicable for certain situations.
@@ -189,5 +394,13 @@ Operations may yield sentinel values like Missing/NotApplicable for certain situ
 {
     idx: find([1,2], 3)
     oob: [10][5]
+}
+```
+
+**output:**
+```json
+{
+  "idx": "Missing('N/A')",
+  "oob": "Missing('N/A')"
 }
 ```

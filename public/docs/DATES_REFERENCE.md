@@ -15,6 +15,16 @@ to execute schedules, remainders, and temporal rules.
 }
 ```
 
+**output:**
+```json
+{
+  "newDate": "2024-09-15",
+  "newTime": "13:10:30.0",
+  "newDateTime": "2024-09-15 13:10:30.0",
+  "sameMoment": true
+}
+```
+
 ## Durations
 
 Durations come in two shapes:
@@ -31,6 +41,16 @@ prints as **PT1H30M**.
     daysOnly: period("P10D")
     clockSpan: duration("PT90M")
     negSeconds: duration("-PT45S")
+}
+```
+
+**output:**
+```json
+{
+  "ymOnly": "P1Y6M",
+  "daysOnly": "P10D",
+  "clockSpan": "PT1H30M",
+  "negSeconds": "-PT45S"
 }
 ```
 
@@ -79,6 +99,39 @@ Datetime `.time` returns a concrete `time(...)` value, while `.date` returns a `
 }
 ```
 
+**output:**
+```json
+{
+  "dateParts": {
+    "year": 2017,
+    "month": 5,
+    "day": 3,
+    "weekdayIso": 4
+  },
+  "timeParts": {
+    "hour": 13,
+    "minute": 10,
+    "second": 30
+  },
+  "datetimeParts": {
+    "month": 12,
+    "hour": 15,
+    "timeOnly": "15:37:00.0",
+    "dateOnly": "2016-12-09"
+  },
+  "durationParts": {
+    "hours": 1,
+    "minutes": 30,
+    "totalHours": 1.5
+  },
+  "periodParts": {
+    "years": 1,
+    "months": 6,
+    "totalMonths": 18
+  }
+}
+```
+
 ## Comparing Temporal Values
 
 Mixing incompatible types (for example, comparing a `date` to a `time` or a `duration`) produces a linking error.
@@ -102,6 +155,29 @@ Mixing incompatible types (for example, comparing a `date` to a `time` or a `dur
         gt: duration("P2D") >= duration("P1D")
     }
     periodEqual: period("P1Y") = period("P12M")
+}
+```
+
+**output:**
+```json
+{
+  "dateCompare": {
+    "eq": true,
+    "lt": true,
+    "gte": true
+  },
+  "timeCompare": {
+    "neq": true,
+    "lt": true
+  },
+  "datetimeCompare": {
+    "gt": true
+  },
+  "durationCompare": {
+    "eq": true,
+    "gt": true
+  },
+  "periodEqual": true
 }
 ```
 
@@ -130,6 +206,22 @@ In these examples, `subtractDates` evaluates to `PT16H`, `dateMinusDate` to `PT2
 }
 ```
 
+**output:**
+```json
+{
+  "subtractDates": "PT16H",
+  "dateMinusDate": "P1D",
+  "addToDate": "2017-05-04 0:00:00.0",
+  "subtractFromDate": "2017-05-02 0:00:00.0",
+  "datetimePlus": "2016-12-10 14:37:00.0",
+  "timeMath": {
+    "minus": "12:00:00.0",
+    "plus": "13:11:20.0",
+    "diff": "PT1H10M30S"
+  }
+}
+```
+
 ## Period Arithmetic
 
 Use periods when you need month-aware math (end-of-month rules, anniversaries, etc.).
@@ -149,6 +241,19 @@ period from a duration raises a linking error.
 }
 ```
 
+**output:**
+```json
+{
+  "addPeriodToDate": "2020-02-29",
+  "subtractPeriodFromDate": "2020-01-29",
+  "datetimePeriod": "2021-03-15 10:30:00.0",
+  "periodMath": {
+    "plus": "P1Y8M",
+    "minus": "P4M"
+  }
+}
+```
+
 ## Calendar Helpers
 
 - **calendarDiff** always returns a `period`, preserving sign. `monthOfYear` and `dayOfWeek` return English names.
@@ -165,6 +270,21 @@ period from a duration raises a linking error.
         backward: calendarDiff(date("2025-03-10"), date("2024-01-15"))
     }
     lastDom: lastDayOfMonth(date("2025-02-10"))
+}
+```
+
+**output:**
+```json
+{
+  "names": {
+    "month": "September",
+    "weekday": "Tuesday"
+  },
+  "calendarDiffs": {
+    "forward": "P25Y4M7D",
+    "backward": "-P1Y1M23D"
+  },
+  "lastDom": 28
 }
 ```
 

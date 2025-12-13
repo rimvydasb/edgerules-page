@@ -95,3 +95,143 @@
     })
 }
 ```
+
+**output:**
+```json
+{
+  "applicationResponse": {
+    "applicationRecord": {
+      "data": {
+        "applicationDate": "2025-01-01 15:43:56.0",
+        "applicants": [
+          {
+            "name": "John Doe",
+            "birthDate": "1990-06-05",
+            "income": 1100,
+            "expense": 600
+          },
+          {
+            "name": "Jane Doe",
+            "birthDate": "1992-05-01",
+            "income": 1500,
+            "expense": 300
+          }
+        ],
+        "propertyValue": 100000,
+        "loanAmount": 80000
+      }
+    },
+    "applicantDecisions": [
+      {
+        "applicantRecord": {
+          "data": {
+            "name": "John Doe",
+            "birthDate": "1990-06-05",
+            "income": 1100,
+            "expense": 600
+          },
+          "age": 34
+        },
+        "creditScore": {
+          "bins": [
+            {
+              "name": "AGE_BIN",
+              "score": 20,
+              "condition": 20
+            },
+            {
+              "name": "AGE_BIN",
+              "score": 30,
+              "condition": 0
+            },
+            {
+              "name": "INC_BIN",
+              "score": 30,
+              "condition": 0
+            }
+          ],
+          "totalScore": 20
+        },
+        "eligibility": {
+          "rules": [
+            {
+              "name": "INC_CHECK",
+              "rule": false
+            },
+            {
+              "name": "MIN_INCOM",
+              "rule": true
+            },
+            {
+              "name": "AGE_CHECK",
+              "rule": true
+            },
+            {
+              "name": "SCREDIT_S",
+              "rule": true
+            }
+          ],
+          "firedRules": [
+            "INC_CHECK"
+          ],
+          "status": "INELIGIBLE"
+        }
+      },
+      {
+        "applicantRecord": {
+          "data": {
+            "name": "Jane Doe",
+            "birthDate": "1992-05-01",
+            "income": 1500,
+            "expense": 300
+          },
+          "age": 32
+        },
+        "creditScore": {
+          "bins": [
+            {
+              "name": "AGE_BIN",
+              "score": 20,
+              "condition": 20
+            },
+            {
+              "name": "AGE_BIN",
+              "score": 30,
+              "condition": 0
+            },
+            {
+              "name": "INC_BIN",
+              "score": 30,
+              "condition": 0
+            }
+          ],
+          "totalScore": 20
+        },
+        "eligibility": {
+          "rules": [
+            {
+              "name": "INC_CHECK",
+              "rule": true
+            },
+            {
+              "name": "MIN_INCOM",
+              "rule": true
+            },
+            {
+              "name": "AGE_CHECK",
+              "rule": true
+            },
+            {
+              "name": "SCREDIT_S",
+              "rule": true
+            }
+          ],
+          "firedRules": [],
+          "status": "INELIGIBLE"
+        }
+      }
+    ],
+    "finalDecision": "DECLINE"
+  }
+}
+```

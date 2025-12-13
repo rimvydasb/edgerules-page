@@ -11,27 +11,27 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@codemirror/commands": "^6.5.0",
-    "@codemirror/lang-javascript": "^6.2.1",
-    "@codemirror/lang-json": "^6.0.0",
-    "@codemirror/language": "^6.10.2",
-    "@codemirror/state": "^6.4.0",
-    "@codemirror/view": "^6.26.3",
+    "@codemirror/commands": "^6.10.0",
+    "@codemirror/lang-javascript": "^6.2.4",
+    "@codemirror/lang-json": "^6.0.2",
+    "@codemirror/language": "^6.11.3",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.39.4",
     "prismjs": "^1.30.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "react-simple-code-editor": "^0.14.1"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.7.0",
+    "@types/node": "^25.0.1",
     "@types/prismjs": "^1.26.5",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "@vitejs/plugin-react-swc": "^4.1.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react-swc": "^4.2.2",
     "jest": "^30.2.0",
-    "ts-jest": "^29.4.4",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.9.3",
-    "vite": "^7.1.9"
+    "vite": "^7.2.7"
   }
 }

@@ -1,11 +1,108 @@
 import type { BaseExample } from '../examples/types'
 
-export interface ExampleBlock {
+export class ExampleBlock {
     pageTitle: string | null;
     sectionTitle: string | null;
-    sectionSubtitle: string | null;
-    description: string;
-    codeExample: string;
+
+    private _descriptionLines: string[];
+    private _codeLines: string[];
+    private _outputLines: string[];
+
+    constructor(pageTitle: string | null = null, sectionTitle: string | null = null) {
+        this.pageTitle = pageTitle;
+        this.sectionTitle = sectionTitle;
+        this._descriptionLines = [];
+        this._codeLines = [];
+        this._outputLines = [];
+    }
+
+    static createEmpty(): ExampleBlock {
+        return new ExampleBlock(null, null);
+    }
+
+    static create({ pageTitle = null, sectionTitle = null, description = '', codeExample = '', output = '' }: {
+        pageTitle?: string | null;
+        sectionTitle?: string | null;
+        description?: string;
+        codeExample?: string;
+        output?: string;
+    }): ExampleBlock {
+        const b = new ExampleBlock(pageTitle, sectionTitle);
+        if (description && description.length > 0) {
+            b.setDescription(description);
+        }
+        if (codeExample && codeExample.length > 0) {
+            b.setCode(codeExample);
+        }
+        if (output && output.length > 0) {
+            b.setOutput(output);
+        }
+        return b;
+    }
+
+    hasContent(): boolean {
+        if (this._codeLines.length > 0) return true;
+        if (this._outputLines.some((l) => l.trim().length > 0)) return true;
+        return this._descriptionLines.some((l) => l.trim().length > 0);
+    }
+
+    // Helpers used by the parser
+    addDescriptionLine(line: string): void {
+        this._descriptionLines.push(line);
+    }
+
+    addBlankParagraph(): void {
+        this._descriptionLines.push('\n\n\n');
+    }
+
+    setDescription(description: string): void {
+        this._descriptionLines = [description];
+    }
+
+    clearDescription(): void {
+        this._descriptionLines = [];
+    }
+
+    addCodeLine(line: string): void {
+        this._codeLines.push(line);
+    }
+
+    setCode(code: string): void {
+        this._codeLines = code.split('\n');
+    }
+
+    clearCode(): void {
+        this._codeLines = [];
+    }
+
+    addOutputLine(line: string): void {
+        this._outputLines.push(line);
+    }
+
+    setOutput(output: string): void {
+        this._outputLines = output.split('\n');
+    }
+
+    clearOutput(): void {
+        this._outputLines = [];
+    }
+
+    trimCodeEdges(): void {
+        while (this._codeLines.length > 0 && (this._codeLines[0] ?? '').trim() === '') this._codeLines.shift();
+        while (this._codeLines.length > 0 && (this._codeLines[this._codeLines.length - 1] ?? '').trim() === '') this._codeLines.pop();
+    }
+
+    get description(): string {
+        return this._descriptionLines.join(' ');
+    }
+
+    get codeExample(): string {
+        return this._codeLines.join('\n');
+    }
+
+    getOutput(): string {
+        return this._outputLines.join('\n');
+    }
 }
 
 /**
@@ -18,107 +115,173 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
 
     let pageTitle: string | null = null;
     let sectionTitle: string | null = null;
-    let sectionSubtitle: string | null = null;
-    let descriptionLines: string[] = [];
     let inCode = false;
-    let codeLines: string[] = [];
+    let isOutputSection = false;
     let fenceLang: string | null = null;
+    let pendingPush = false; // true when we've just closed an edgerules block and await possible output
 
-    const hasPendingContent = (): boolean => {
-        if (codeLines.length > 0) return true;
-        return descriptionLines.some((line) => line.trim().length > 0);
-    };
+    // Current block we're filling
+    let current = ExampleBlock.createEmpty();
 
     const pushBlock = (): void => {
-        if (!hasPendingContent()) {
-            descriptionLines = [];
-            codeLines = [];
+        // If there's nothing meaningful in this block (no desc/code/output), just reset context
+        if (!current.hasContent()) {
+            current = ExampleBlock.createEmpty();
+            current.pageTitle = pageTitle;
+            current.sectionTitle = sectionTitle;
+            pendingPush = false;
             return;
         }
-        const description = descriptionLines.join(" ");
-        const codeExample = codeLines.join("\n");
-        blocks.push({ pageTitle, sectionTitle, sectionSubtitle, description, codeExample });
-        descriptionLines = [];
-        codeLines = [];
+
+        // push a copy of current to avoid later mutation
+        blocks.push(ExampleBlock.create({
+            pageTitle: current.pageTitle,
+            sectionTitle: current.sectionTitle,
+            description: current.description,
+            codeExample: current.codeExample,
+            output: current.getOutput(),
+        }));
+
+        // reset
+        current = ExampleBlock.createEmpty();
+        current.pageTitle = pageTitle;
+        current.sectionTitle = sectionTitle;
+        pendingPush = false;
     };
 
     for (let i = 0; i < lines.length; i += 1) {
-        const line = (lines[i] ?? "");
+        const line = (lines[i] ?? '');
 
-        if (!inCode) {
-            const m1 = line.match(/^#\s+(.+)/);
-            if (m1 && m1[1]) {
-                pushBlock();
-                pageTitle = m1[1].trim();
-                sectionTitle = null;
-                sectionSubtitle = null;
-                descriptionLines = [];
-                continue;
-            }
-
-            const m2 = line.match(/^##\s+(.+)/);
-            if (m2 && m2[1]) {
-                pushBlock();
-                sectionTitle = m2[1].trim();
-                sectionSubtitle = null;
-                descriptionLines = [];
-                continue;
-            }
-
-            const m3 = line.match(/^###\s+(.+)/);
-            if (m3 && m3[1]) {
-                pushBlock();
-                sectionSubtitle = m3[1].trim();
-                descriptionLines = [];
-                continue;
-            }
-        }
-
-        const fenceOpen = line.match(/^```(\w+)?\s*$/);
-        if (fenceOpen) {
+        const fenceMatch = line.match(/^```(\w+)?\s*$/);
+        if (fenceMatch) {
+            const lang = (fenceMatch[1] ?? '').toLowerCase() || null;
             if (!inCode) {
+                // Opening fence
                 inCode = true;
-                fenceLang = (fenceOpen[1] ?? '').toLowerCase() || null;
+                fenceLang = lang;
+                // If this is a JSON fence and we are in an output section, treat it as output collection
+                // Otherwise if it's edgerules, we collect code. Other languages we'll treat as generic code (ignored by UI).
                 continue;
             }
 
-            inCode = false;
-            if (fenceLang === 'edgerules') {
-                while (codeLines.length > 0 && (codeLines[0] ?? '').trim() === '') codeLines.shift();
-                while (codeLines.length > 0 && (codeLines[codeLines.length - 1] ?? '').trim() === '') codeLines.pop();
+            // Closing fence. Which kind did we close?
+            if (!fenceLang) {
+                // unknown fence, just toggle
+                inCode = false;
+                fenceLang = null;
+                continue;
             }
-            pushBlock();
+
+            // If we were collecting JSON output inside an output section, closing it finalizes the block
+            if (fenceLang === 'json' && isOutputSection) {
+                inCode = false;
+                fenceLang = null;
+                // finished collecting output for this block -> finalize
+                pushBlock();
+                isOutputSection = false;
+                continue;
+            }
+
+            // If we were collecting edgerules code, closing it means code is complete; defer pushing in case output follows
+            if (fenceLang === 'edgerules') {
+                inCode = false;
+                fenceLang = null;
+                current.trimCodeEdges();
+                pendingPush = true; // wait for possible output: marker
+                continue;
+            }
+
+            // Any other fence closed - just stop collecting inCode
+            inCode = false;
             fenceLang = null;
             continue;
         }
 
+        if (!inCode) {
+            // Only support # and ## as structural headings. ### is treated as regular content.
+            const heading = line.match(/^(#{1,2})\s+(.+)/);
+            if (heading && heading[1] && heading[2]) {
+                // If we had a pending block (closed edgerules with no output), finalize it now
+                if (pendingPush) {
+                    pushBlock();
+                }
+
+                // Finalize previous non-empty block before updating context
+                pushBlock();
+                const level = heading[1].length; // 1 or 2
+                const text = heading[2].trim();
+                if (level === 1) {
+                    pageTitle = text;
+                    sectionTitle = null;
+                } else {
+                    sectionTitle = text;
+                }
+                isOutputSection = false;
+                current.pageTitle = pageTitle;
+                current.sectionTitle = sectionTitle;
+                continue;
+            }
+
+            // contains only the word "output:" or "**output:**"
+            if (line.match(/^output:\s*$/i) || line.match(/^\*\*output:\*\*\s*$/i)) {
+                // start collecting output lines for the current block
+                isOutputSection = true;
+                // clear any previous output capture for this block
+                current.clearOutput();
+                continue;
+            }
+
+            // If we were waiting for output but encounter non-output content, finalize the pending block now
+            if (pendingPush && !isOutputSection && line.trim() !== '') {
+                pushBlock();
+            }
+
+            if (isOutputSection) {
+                // non-fenced output lines (rare); collect as output text
+                current.addOutputLine(line);
+                continue;
+            }
+        }
+
         if (inCode) {
-            codeLines.push(line);
+            // Route code lines based on the active fence language
+            if (fenceLang === 'edgerules') {
+                current.addCodeLine(line);
+            } else if (fenceLang === 'json' && isOutputSection) {
+                current.addOutputLine(line);
+            } else {
+                // other fenced content - treat as description/code: append to description to be safe
+                current.addDescriptionLine(line);
+            }
         } else {
-            if (line.trim() === "" && descriptionLines.length === 0) {
+            if (line.trim() === '' && !current.hasContent()) {
                 continue;
             }
 
             // starts with -
             const listMatch = line.match(/^\s*-\s+(.*)/);
             if (listMatch) {
-                // remove -
+                // remove - and replace with bullet
                 let trimmed = line.replace(/^\s*-\s+/, '• ');
-                descriptionLines.push(trimmed);
-                descriptionLines.push("\n\n\n");
+                current.addDescriptionLine(trimmed);
+                current.addBlankParagraph();
                 continue;
             }
 
-            if (line.trim() === "" && descriptionLines.length > 0) {
-                descriptionLines.push("\n\n\n");
+            if (line.trim() === '' && current.hasContent()) {
+                current.addBlankParagraph();
                 continue;
             }
 
-            descriptionLines.push(line);
+            // By default treat the line as description text. This also captures ### headings (no subtitle support).
+            current.addDescriptionLine(line);
         }
     }
 
-    pushBlock();
+    // If we ended while waiting for output or after closing edgerules with no further content, finalize
+    if (pendingPush || current.hasContent()) {
+        pushBlock();
+    }
 
     return blocks;
 }
@@ -159,10 +322,10 @@ export function toSlug(s: string): string {
 export function mapBlocksToBaseExamples(blocks: ExampleBlock[]): BaseExample[] {
     return blocks.map((b, idx): BaseExample => {
         const title = b.sectionTitle
-            ? (b.sectionSubtitle ? `${b.sectionTitle} · ${b.sectionSubtitle}` : b.sectionTitle)
+            ? b.sectionTitle
             : (b.pageTitle ?? `Example ${idx + 1}`)
         const idBase = b.sectionTitle
-            ? [b.sectionTitle, b.sectionSubtitle].filter(Boolean).join(' ')
+            ? b.sectionTitle
             : (b.pageTitle ?? `example-${idx + 1}`)
         const id = toSlug(idBase)
         return { id, title, description: b.description, codeExample: b.codeExample }
@@ -257,4 +420,4 @@ export function formatWasmResult(value: unknown): string {
     } catch {
         return String(value);
     }
-};
+}

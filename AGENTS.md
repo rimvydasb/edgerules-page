@@ -4,12 +4,21 @@
 - Content comes from Markdown files in `public/` and is parsed at runtime.
 - Examples are evaluated in-browser via the EdgeRules WebAssembly module.
 
+> Do not run the dev server. Run npm run build to verify the code instead.
+
 ## Dev
 
 - Prerequisites: Node 20+ and npm.
 - Install: `npm install`
 - Run dev: `npm run dev`
 - Build: `npm run build` (output in `dist/`)
+
+## Maintenance
+
+```bash
+ncu -u            # update dependencies
+npm install       # install updated deps
+```
 
 ## GitHub Pages
 

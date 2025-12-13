@@ -8,6 +8,6 @@ export type BaseExample = {
 export type Example = BaseExample & {
     input: string
     output: string
-    error: string | null
+    isError: boolean
 }
 
