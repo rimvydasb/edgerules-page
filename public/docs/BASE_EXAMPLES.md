@@ -1,7 +1,8 @@
 # Introduction
 
 **EdgeRules** expression language helps you to define business rules and calculations.
-It is a simple, declarative, referentially transparent, and type-safe language with a small set of concepts that you can combine to express complex logic.
+It is a simple, declarative, referentially transparent, and type-safe language with a small set of concepts that you can
+combine to express complex logic.
 Here are some interactive examples to get you started with JSON output.
 
 In the example below, we calculate the best 3-month sales period.
@@ -20,11 +21,36 @@ You can edit the code and see the results immediately.
 ```
 
 **output:**
+
 ```json
 {
-  "sales": [10, 20, 8, 7, 1, 10, 6, 78, 0, 8, 0, 8],
+  "sales": [
+    10,
+    20,
+    8,
+    7,
+    1,
+    10,
+    6,
+    78,
+    0,
+    8,
+    0,
+    8
+  ],
   "salesCount": 12,
-  "acc": [38, 35, 16, 18, 17, 94, 84, 86, 8, 16],
+  "acc": [
+    38,
+    35,
+    16,
+    18,
+    17,
+    94,
+    84,
+    86,
+    8,
+    16
+  ],
   "best": 94
 }
 ```
@@ -45,6 +71,7 @@ Integers and reals with +, -, *, /, ^ and unary -.
 ```
 
 **output:**
+
 ```json
 {
   "summing": 5.2,
@@ -59,6 +86,7 @@ Integers and reals with +, -, *, /, ^ and unary -.
 ## Comparisons
 
 Numeric comparisons: <, <=, >, >=, =, <>.',
+
 ```edgerules
 {
     lower: 1 < 2
@@ -71,14 +99,15 @@ Numeric comparisons: <, <=, >, >=, =, <>.',
 ```
 
 **output:**
+
 ```json
-{
-  "summing": 5.2,
-  "subtracting": 9,
-  "product": 42,
-  "division": 2.5,
-  "power": 256,
-  "negate": -6
+    {
+  "lower": true,
+  "lowerEquals": true,
+  "greater": true,
+  "greaterEquals": true,
+  "simpleEquals": true,
+  "negate": true
 }
 ```
 
@@ -97,7 +126,21 @@ Booleans true/false and logical operators not/and/or/xor.
 }
 ```
 
+**output:**
+
+```json
+{
+  "a": true,
+  "b": false,
+  "allTrue": true,
+  "anyTrue": true,
+  "justOne": true,
+  "negateComp": true
+}
+```
+
 ## Strings
+
 Single or double quotes. Compare with = and <>.
 
 ```edgerules
@@ -106,6 +149,17 @@ Single or double quotes. Compare with = and <>.
     b: "hello"
     equal: a = b
     notEqual: a <> b
+}
+```
+
+**output:**
+
+```json
+{
+  "a": "hello",
+  "b": "hello",
+  "equal": true,
+  "notEqual": false
 }
 ```
 
@@ -124,6 +178,29 @@ Indexing, filtering, and numeric built-ins sum/max/count; find returns index or 
     idxOf7: find(nums, 7)
 }
 ```
+
+**output:**
+
+```json
+{
+  "nums": [
+    1,
+    5,
+    12,
+    7
+  ],
+  "first": 1,
+  "filtered": [
+    12,
+    7
+  ],
+  "sumAll": 25,
+  "maxAll": 12,
+  "countAll": 4,
+  "idxOf7": 3
+}
+```
+
 ## Ranges
 
 Inclusive integer ranges a..b; use in loops and built-ins.
@@ -137,6 +214,28 @@ Inclusive integer ranges a..b; use in loops and built-ins.
     countR: count(1..5)
 }
 ```
+
+**output:**
+
+```json
+{
+  "r": {
+    "start": 1,
+    "endExclusive": 6
+  },
+  "doubled": [
+    2,
+    4,
+    6,
+    8,
+    10
+  ],
+  "sumR": 15,
+  "maxR": 5,
+  "countR": 5
+}
+```
+
 ## Object (Context)
 
 Named fields with references and nesting.
@@ -148,6 +247,18 @@ Named fields with references and nesting.
         born: 1815
     }
     ageNow: 2025 - person.born
+}
+```
+
+**output:**
+
+```json
+{
+  "person": {
+    "first": "Ada",
+    "born": 1815
+  },
+  "ageNow": 210
 }
 ```
 
@@ -168,6 +279,24 @@ date("YYYY-MM-DD"), compare, add/sub durations, fields and helpers.
     wName: dayOfWeek(d1)
     lastDom: lastDayOfMonth(date("2025-02-10"))
     between: calendarDiff(date("1987-03-07"),d2)
+}
+```
+
+**output:**
+
+```json
+{
+  "d1": "2017-05-03",
+  "d2": "2017-05-04",
+  "compare": true,
+  "plusDays": "2017-05-04T00:00:00",
+  "beforeHalfDay": "2017-03-30T12:00:00",
+  "minusMonth": "2017-02-28",
+  "y": 2017,
+  "mName": "May",
+  "wName": "Wednesday",
+  "lastDom": 28,
+  "between": "P30Y1M27D"
 }
 ```
 
