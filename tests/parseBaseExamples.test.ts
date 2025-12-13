@@ -8,7 +8,7 @@ describe("BASE_EXAMPLES.md parsing (basic)", () => {
     const blocks: ExampleBlock[] = parseBaseExamplesMarkdown(markdown);
 
     test("collects all code blocks", () => {
-        expect(blocks.length).toBe(13);
+        expect(blocks.length).toBe(14);
     });
 
     test("each block has titles, description, and code", () => {

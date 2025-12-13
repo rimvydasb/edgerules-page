@@ -1,5 +1,5 @@
 const defaultBase = 'http://localhost:5173/edgerules-page/';
-const rawBase = process.env.EDGE_RULES_BASE_URL ?? defaultBase;
+const rawBase = process.env["EDGE_RULES_BASE_URL"] ?? defaultBase;
 const baseUrl = rawBase.endsWith('/') ? rawBase : `${rawBase}/`;
 
 const makeUrl = (path: string): string => new URL(path, baseUrl).toString();
