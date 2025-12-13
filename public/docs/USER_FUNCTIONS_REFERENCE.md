@@ -15,6 +15,22 @@ If argument types are not specified, they will be inferred during runtime.
 }
 ```
 
+**output:**
+```json
+{
+  "asNumbers": [
+    "1!",
+    "2!",
+    "3!"
+  ],
+  "asChars": [
+    "a!",
+    "b!",
+    "c!"
+  ]
+}
+```
+
 ## Functions as Enclosed Context
 
 Inside a function, it is possible to nest other functions and variables deeply.
@@ -50,5 +66,31 @@ each function an enclosed context that can be reused and reasoned about independ
         expense: 400;
         tags: ["vip", "premium"]
     })
+}
+```
+
+**output:**
+```json
+{
+  "detailedCustomer": {
+    "self": {
+      "name": "Alice",
+      "income": 1000,
+      "expense": 400,
+      "tags": [
+        "vip",
+        "premium"
+      ]
+    },
+    "financialInformation": {
+      "total": 1400,
+      "savings": 600,
+      "isProfitable": true
+    },
+    "status": {
+      "tagCount": 2,
+      "isVIP": true
+    }
+  }
 }
 ```

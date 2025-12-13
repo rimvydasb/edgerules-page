@@ -14,6 +14,17 @@ User can define their own types and use them for function variables.
 }
 ```
 
+**output:**
+```json
+{
+  "vals": [
+    2,
+    3,
+    4
+  ]
+}
+```
+
 ## Complex Types
 
 Types can be nested and combined.
@@ -32,6 +43,31 @@ Types can be nested and combined.
         {name: "Bob"; age: 15; tags: ["student"]}
         {name: "Charlie"; age: 22; tags: ["designer"]}
     ])
+}
+```
+
+**output:**
+```json
+{
+  "adults": {
+    "result": [
+      {
+        "name": "Alice",
+        "age": 30,
+        "tags": [
+          "engineer",
+          "manager"
+        ]
+      },
+      {
+        "name": "Charlie",
+        "age": 22,
+        "tags": [
+          "designer"
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -59,6 +95,23 @@ This approach brings predictable behavior and is fault-tolerant with unexpected 
 }
 ```
 
+**output:**
+```json
+{
+  "result": {
+    "checkedPerson": {
+      "name": "Alice",
+      "age": "Missing('age')",
+      "tags": [
+        "manager"
+      ]
+    },
+    "isStudent": false,
+    "isAdult": false
+  }
+}
+```
+
 ## Explicit Casting
 
 During runtime, complex objects can be explicitly cast to the expected type using the `as` operator.
@@ -72,5 +125,15 @@ Casting will not convert field types - if the field type does not match the expe
 {
     type Point: { x: <number>; y: <number> }
     p: { x: 1 } as Point
+}
+```
+
+**output:**
+```json
+{
+  "p": {
+    "x": 1,
+    "y": "Missing('y')"
+  }
 }
 ```

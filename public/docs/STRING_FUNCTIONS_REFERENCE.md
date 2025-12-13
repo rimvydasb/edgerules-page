@@ -8,12 +8,22 @@ Converting the number to string. Math operator `+` can be used for string concat
 "#" + toString(404)
 ```
 
+**output:**
+```json
+"#404"
+```
+
 ## substring
 
 Substring starting at position
 
 ```edgerules
 substring("foobar", 3)
+```
+
+**output:**
+```json
+"obar"
 ```
 
 ## substring (with length)
@@ -24,12 +34,22 @@ Substring with length
 substring("foobar", -3, 2)
 ```
 
+**output:**
+```json
+"ba"
+```
+
 ## length
 
 Number of characters.
 
 ```edgerules
 length("foo")
+```
+
+**output:**
+```json
+3
 ```
 
 ## toUpperCase
@@ -40,12 +60,22 @@ To uppercase.
 toUpperCase("aBc4")
 ```
 
+**output:**
+```json
+"ABC4"
+```
+
 ## toLowerCase
 
 To lowercase.
 
 ```edgerules
 toLowerCase("aBc4")
+```
+
+**output:**
+```json
+"abc4"
 ```
 
 ## substringBefore
@@ -56,12 +86,22 @@ String before match.
 substringBefore("foobar", "bar")
 ```
 
+**output:**
+```json
+"foo"
+```
+
 ## substringAfter
 
 String after match.
 
 ```edgerules
 substringAfter("foobar", "ob")
+```
+
+**output:**
+```json
+"ar"
 ```
 
 ## contains
@@ -72,12 +112,22 @@ True if contains substring.
 contains("foobar", "of")
 ```
 
+**output:**
+```json
+false
+```
+
 ## startsWith
 
 Checks prefix.
 
 ```edgerules
 startsWith("foobar", "fo")
+```
+
+**output:**
+```json
+true
 ```
 
 ## endsWith
@@ -88,12 +138,26 @@ Checks suffix.
 endsWith("foobar", "r")
 ```
 
+**output:**
+```json
+true
+```
+
 ## regexSplit
 
 Splits string by regex.
 
 ```edgerules
 regexSplit("a   b c", "\s+")
+```
+
+**output:**
+```json
+[
+  "a",
+  "b",
+  "c"
+]
 ```
 
 ## split
@@ -104,12 +168,26 @@ Simple substring split.
 split("a-b-c", "-")
 ```
 
+**output:**
+```json
+[
+  "a",
+  "b",
+  "c"
+]
+```
+
 ## trim
 
 Trim whitespace.
 
 ```edgerules
 trim("  hello  ")
+```
+
+**output:**
+```json
+"hello"
 ```
 
 ## regexReplace
@@ -120,12 +198,22 @@ Regex replace.
 regexReplace('Hello 123 world 456', '\d+', 'X', 'g')
 ```
 
+**output:**
+```json
+"Hello X world X"
+```
+
 ## regexReplace (with flags)
 
 Regex replace with flags.
 
 ```edgerules
 regexReplace("Abcd", "ab", "xx", "i")
+```
+
+**output:**
+```json
+"xxcd"
 ```
 
 ## replace
@@ -136,12 +224,22 @@ Simple substring replace, case-insensitive.
 replace("Abcd", "ab", "xx", "i")
 ```
 
+**output:**
+```json
+"xxcd"
+```
+
 ## replaceFirst
 
 Replace first occurrence.
 
 ```edgerules
 replaceFirst("foo bar foo", "foo", "baz")
+```
+
+**output:**
+```json
+"baz bar foo"
 ```
 
 ## replaceLast
@@ -152,12 +250,22 @@ Replace last occurrence.
 replaceLast("foo bar foo", "foo", "baz")
 ```
 
+**output:**
+```json
+"foo bar baz"
+```
+
 ## charAt
 
 Character at index.
 
 ```edgerules
 charAt("Abcd", 2)
+```
+
+**output:**
+```json
+"c"
 ```
 
 ## charCodeAt
@@ -168,12 +276,22 @@ Unicode of character at index.
 charCodeAt("Abcd", 2)
 ```
 
+**output:**
+```json
+99
+```
+
 ## indexOf
 
 Index of substring, or -1 if not found.
 
 ```edgerules
 indexOf("Abcd", "b")
+```
+
+**output:**
+```json
+1
 ```
 
 ## lastIndexOf
@@ -184,12 +302,22 @@ Last index of substring, or -1 if not found.
 lastIndexOf("Abcb", "b")
 ```
 
+**output:**
+```json
+3
+```
+
 ## fromBase64
 
 Decode from base64.
 
 ```edgerules
 fromBase64("RWRnZVJ1bGVz")
+```
+
+**output:**
+```json
+"EdgeRules"
 ```
 
 ## toBase64
@@ -200,12 +328,22 @@ Encode to base64.
 toBase64("EdgeRules")
 ```
 
+**output:**
+```json
+"RWRnZVJ1bGVz"
+```
+
 ## fromCharCode
 
 Create string from Unicode values.
 
 ```edgerules
 fromCharCode(99, 100, 101)
+```
+
+**output:**
+```json
+"cde"
 ```
 
 ## padStart
@@ -216,12 +354,22 @@ Pad string on left to length with char.
 padStart("7", 3, "0")
 ```
 
+**output:**
+```json
+"007"
+```
+
 ## padEnd
 
 Pad string on right to length with char.
 
 ```edgerules
 padEnd("7", 3, "0")
+```
+
+**output:**
+```json
+"700"
 ```
 
 ## repeat
@@ -232,12 +380,22 @@ Repeat string N times.
 repeat("ab", 3)
 ```
 
+**output:**
+```json
+"ababab"
+```
+
 ## reverse
 
 Reverse string.
 
 ```edgerules
 reverse("abc")
+```
+
+**output:**
+```json
+"cba"
 ```
 
 ## sanitizeFilename
@@ -248,10 +406,20 @@ Remove characters not allowed in filenames.
 sanitizeFilename('a/b\\c:d*e?f\"g<h>ij.exe')
 ```
 
+**output:**
+```json
+"abcdefghij.exe"
+```
+
 ## interpolate
 
 Template string interpolation.
 
 ```edgerules
 interpolate("Hi ${name}", { name: "Ana" })
+```
+
+**output:**
+```json
+"Hi Ana"
 ```
