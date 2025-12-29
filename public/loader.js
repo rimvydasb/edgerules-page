@@ -19,8 +19,8 @@
 
         const api = {
             ready: Promise.resolve(true),
-            evaluate_all: (input) => mod.evaluate_all(input),
-            evaluate_expression: (input) => mod.evaluate_expression(input)
+            evaluateAll: (input) => mod.DecisionEngine.evaluateAll(input),
+            evaluateExpression: (input) => mod.DecisionEngine.evaluateExpression(input)
         };
 
         window.__edgeRules = api;
