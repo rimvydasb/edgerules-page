@@ -113,135 +113,144 @@ function handleError(f, args) {
 function isLikeNone(x) {
     return x === undefined || x === null;
 }
-/**
- * @param {string} code
- * @returns {any}
- */
-export function evaluate_expression(code) {
-    const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.evaluate_expression(ptr0, len0);
-    return ret;
-}
-
-/**
- * @param {string} path
- * @param {any} object
- * @returns {any}
- */
-export function set_to_decision_service_model(path, object) {
-    const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.set_to_decision_service_model(ptr0, len0, object);
-    return ret;
-}
-
-/**
- * @param {string} service_method
- * @param {any} decision_request
- * @returns {any}
- */
-export function execute_decision_service(service_method, decision_request) {
-    const ptr0 = passStringToWasm0(service_method, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.execute_decision_service(ptr0, len0, decision_request);
-    return ret;
-}
-
-/**
- * @param {any} model
- * @returns {any}
- */
-export function create_decision_service(model) {
-    const ret = wasm.create_decision_service(model);
-    return ret;
-}
-
-/**
- * @param {string} code
- * @returns {any}
- */
-export function evaluate_all(code) {
-    const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.evaluate_all(ptr0, len0);
-    return ret;
-}
-
-/**
- * @param {string} path
- * @returns {any}
- */
-export function get_from_decision_service_model(path) {
-    const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.get_from_decision_service_model(ptr0, len0);
-    return ret;
-}
-
-/**
- * @param {string} path
- * @param {any} invocation
- * @returns {any}
- */
-export function set_invocation(path, invocation) {
-    const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.set_invocation(ptr0, len0, invocation);
-    return ret;
-}
-
-/**
- * @param {string} code
- * @param {string} method
- * @param {any} args
- * @returns {any}
- */
-export function evaluate_method(code, method, args) {
-    const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(method, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.evaluate_method(ptr0, len0, ptr1, len1, args);
-    return ret;
-}
-
-/**
- * @param {string} path
- * @returns {any}
- */
-export function remove_from_decision_service_model(path) {
-    const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.remove_from_decision_service_model(ptr0, len0);
-    return ret;
-}
 
 export function init_panic_hook() {
     wasm.init_panic_hook();
 }
 
-/**
- * @param {string} code
- * @param {string} field
- * @returns {any}
- */
-export function evaluate_field(code, field) {
-    const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passStringToWasm0(field, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.evaluate_field(ptr0, len0, ptr1, len1);
-    return ret;
-}
+const DecisionEngineFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_decisionengine_free(ptr >>> 0, 1));
 
-/**
- * @returns {any}
- */
-export function get_decision_service_model() {
-    const ret = wasm.get_decision_service_model();
-    return ret;
+export class DecisionEngine {
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        DecisionEngineFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_decisionengine_free(ptr, 0);
+    }
+    /**
+     * @param {string} code
+     * @returns {any}
+     */
+    static evaluateAll(code) {
+        const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionengine_evaluateAll(ptr0, len0);
+        return ret;
+    }
+    /**
+     * @param {string} code
+     * @param {string} field
+     * @returns {any}
+     */
+    static evaluateField(code, field) {
+        const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(field, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionengine_evaluateField(ptr0, len0, ptr1, len1);
+        return ret;
+    }
+    /**
+     * @param {string} code
+     * @returns {any}
+     */
+    static evaluateExpression(code) {
+        const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionengine_evaluateExpression(ptr0, len0);
+        return ret;
+    }
 }
+if (Symbol.dispose) DecisionEngine.prototype[Symbol.dispose] = DecisionEngine.prototype.free;
+
+const DecisionServiceFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_decisionservice_free(ptr >>> 0, 1));
+
+export class DecisionService {
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        DecisionServiceFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_decisionservice_free(ptr, 0);
+    }
+    /**
+     * @param {string} path
+     * @returns {any}
+     */
+    get(path) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionservice_get(this.__wbg_ptr, ptr0, len0);
+        return ret;
+    }
+    /**
+     * @param {any} model
+     */
+    constructor(model) {
+        const ret = wasm.decisionservice_new(model);
+        this.__wbg_ptr = ret >>> 0;
+        DecisionServiceFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * @param {string} path
+     * @param {any} object
+     * @returns {any}
+     */
+    set(path, object) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionservice_set(this.__wbg_ptr, ptr0, len0, object);
+        return ret;
+    }
+    /**
+     * @param {string} path
+     * @returns {boolean}
+     */
+    remove(path) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionservice_remove(this.__wbg_ptr, ptr0, len0);
+        return ret !== 0;
+    }
+    /**
+     * @param {string} method
+     * @param {any} request
+     * @returns {any}
+     */
+    execute(method, request) {
+        const ptr0 = passStringToWasm0(method, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionservice_execute(this.__wbg_ptr, ptr0, len0, request);
+        return ret;
+    }
+    /**
+     * @param {string} path
+     * @returns {any}
+     */
+    getType(path) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionservice_getType(this.__wbg_ptr, ptr0, len0);
+        return ret;
+    }
+}
+if (Symbol.dispose) DecisionService.prototype[Symbol.dispose] = DecisionService.prototype.free;
 
 const EXPECTED_RESPONSE_TYPES = new Set(['basic', 'cors', 'default']);
 
