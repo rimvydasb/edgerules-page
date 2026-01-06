@@ -1,40 +1,47 @@
 /* tslint:disable */
 /* eslint-disable */
-export function execute_decision_service(service_method: string, decision_request: any): any;
-export function remove_from_decision_service_model(path: string): any;
-export function evaluate_method(code: string, method: string, args: any): any;
-export function set_to_decision_service_model(path: string, object: any): any;
 export function init_panic_hook(): void;
-export function set_invocation(path: string, invocation: any): any;
-export function get_decision_service_model(): any;
-export function evaluate_field(code: string, field: string): any;
-export function evaluate_all(code: string): any;
-export function create_decision_service(model: any): any;
-export function get_from_decision_service_model(path: string): any;
-export function evaluate_expression(code: string): any;
+export class DecisionEngine {
+  private constructor();
+  free(): void;
+  [Symbol.dispose](): void;
+  static evaluateAll(code: string): any;
+  static evaluateField(code: string, field: string): any;
+  static evaluateExpression(code: string): any;
+}
+export class DecisionService {
+  free(): void;
+  [Symbol.dispose](): void;
+  get(path: string): any;
+  constructor(model: any);
+  set(path: string, object: any): any;
+  remove(path: string): boolean;
+  execute(method: string, request: any): any;
+  getType(path: string): any;
+}
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly create_decision_service: (a: any) => any;
-  readonly evaluate_all: (a: number, b: number) => any;
-  readonly evaluate_expression: (a: number, b: number) => any;
-  readonly evaluate_field: (a: number, b: number, c: number, d: number) => any;
-  readonly evaluate_method: (a: number, b: number, c: number, d: number, e: any) => any;
-  readonly execute_decision_service: (a: number, b: number, c: any) => any;
-  readonly get_decision_service_model: () => any;
-  readonly get_from_decision_service_model: (a: number, b: number) => any;
+  readonly __wbg_decisionengine_free: (a: number, b: number) => void;
+  readonly __wbg_decisionservice_free: (a: number, b: number) => void;
+  readonly decisionengine_evaluateAll: (a: number, b: number) => any;
+  readonly decisionengine_evaluateExpression: (a: number, b: number) => any;
+  readonly decisionengine_evaluateField: (a: number, b: number, c: number, d: number) => any;
+  readonly decisionservice_execute: (a: number, b: number, c: number, d: any) => any;
+  readonly decisionservice_get: (a: number, b: number, c: number) => any;
+  readonly decisionservice_getType: (a: number, b: number, c: number) => any;
+  readonly decisionservice_new: (a: any) => number;
+  readonly decisionservice_remove: (a: number, b: number, c: number) => number;
+  readonly decisionservice_set: (a: number, b: number, c: number, d: any) => any;
   readonly init_panic_hook: () => void;
-  readonly remove_from_decision_service_model: (a: number, b: number) => any;
-  readonly set_invocation: (a: number, b: number, c: any) => any;
-  readonly set_to_decision_service_model: (a: number, b: number, c: any) => any;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
-  readonly __wbindgen_export_5: WebAssembly.Table;
+  readonly __wbindgen_export_4: WebAssembly.Table;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_start: () => void;
 }
 

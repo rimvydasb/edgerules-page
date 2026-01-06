@@ -102,7 +102,7 @@
   "applicationResponse": {
     "applicationRecord": {
       "data": {
-        "applicationDate": "2025-01-01 15:43:56.0",
+        "applicationDate": "2025-01-01T15:43:56",
         "applicants": [
           {
             "name": "John Doe",

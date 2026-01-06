@@ -55,9 +55,8 @@ npm install       # install updated deps
   - Else falls back to the page title (or `Example n`).
 - Display: `src/App.tsx` loads the selected page, converts each `BaseExample` to an `Example` with
   `input`, then renders two editors per example: editable input (left) and read-only output (right).
-- Evaluate: When the WASM module is ready, `evaluate_expression` is used for a single non-empty line,
-  otherwise `evaluate_all`. Errors are shown in the output panel.
-
+- Evaluate: When the WASM module is ready, `evaluateExpression` is used for a single non-empty line,
+otherwise `evaluateAll`. Errors are shown in the output panel.
 Tip: To add a new example, edit the Markdown under `public/`. Use headings for titles and fenced code
 blocks (check the existing files for examples).
 

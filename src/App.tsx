@@ -78,8 +78,8 @@ export default function App() {
         try {
             const nonEmptyLines = input.split(/\r?\n/).filter((l) => l.trim() !== '')
             const result = nonEmptyLines.length === 1
-                ? mod.evaluate_expression(nonEmptyLines[0]!)
-                : mod.evaluate_all(input)
+                ? mod.evaluateExpression(nonEmptyLines[0]!)
+                : mod.evaluateAll(input)
             return { output: formatWasmResult(result), isError: false }
         } catch (err: unknown) {
             if (typeof err === 'object' && err !== null && !(err instanceof Error)) {

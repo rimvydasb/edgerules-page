@@ -19,8 +19,8 @@ to execute schedules, remainders, and temporal rules.
 ```json
 {
   "newDate": "2024-09-15",
-  "newTime": "13:10:30.0",
-  "newDateTime": "2024-09-15 13:10:30.0",
+  "newTime": "13:10:30",
+  "newDateTime": "2024-09-15T13:10:30",
   "sameMoment": true
 }
 ```
@@ -113,12 +113,13 @@ Datetime `.time` returns a concrete `time(...)` value, while `.date` returns a `
     "minute": 10,
     "second": 30
   },
-  "datetimeParts": {
-    "month": 12,
-    "hour": 15,
-    "timeOnly": "15:37:00.0",
-    "dateOnly": "2016-12-09"
-  },
+        "datetimeParts": {
+          "month": 12,
+          "hour": 15,
+          "timeOnly": "15:37:00",
+          "dateOnly": "2016-12-09"
+        }
+  ,
   "durationParts": {
     "hours": 1,
     "minutes": 30,
@@ -211,12 +212,12 @@ In these examples, `subtractDates` evaluates to `PT16H`, `dateMinusDate` to `PT2
 {
   "subtractDates": "PT16H",
   "dateMinusDate": "P1D",
-  "addToDate": "2017-05-04 0:00:00.0",
-  "subtractFromDate": "2017-05-02 0:00:00.0",
-  "datetimePlus": "2016-12-10 14:37:00.0",
+  "addToDate": "2017-05-04T00:00:00",
+  "subtractFromDate": "2017-05-02T00:00:00",
+  "datetimePlus": "2016-12-10T14:37:00",
   "timeMath": {
-    "minus": "12:00:00.0",
-    "plus": "13:11:20.0",
+    "minus": "12:00:00",
+    "plus": "13:11:20",
     "diff": "PT1H10M30S"
   }
 }
@@ -246,7 +247,7 @@ period from a duration raises a linking error.
 {
   "addPeriodToDate": "2020-02-29",
   "subtractPeriodFromDate": "2020-01-29",
-  "datetimePeriod": "2021-03-15 10:30:00.0",
+  "datetimePeriod": "2021-03-15T10:30:00",
   "periodMath": {
     "plus": "P1Y8M",
     "minus": "P4M"

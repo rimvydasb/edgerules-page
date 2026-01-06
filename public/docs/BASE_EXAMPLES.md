@@ -300,8 +300,8 @@ date("YYYY-MM-DD"), compare, add/sub durations, fields and helpers.
   "d1": "2017-05-03",
   "d2": "2017-05-04",
   "compare": true,
-  "plusDays": "2017-05-04 0:00:00.0",
-  "beforeHalfDay": "2017-03-30 12:00:00.0",
+  "plusDays": "2017-05-04T00:00:00",
+  "beforeHalfDay": "2017-03-30T12:00:00",
   "minusMonth": "2017-02-28",
   "y": 2017,
   "mName": "May",
@@ -328,10 +328,10 @@ time("hh:mm:ss"), compare, +/- duration, and fields.
 **output:**
 ```json
 {
-  "t1": "13:10:30.0",
-  "t2": "10:00:00.0",
+  "t1": "13:10:30",
+  "t2": "10:00:00",
   "diff": "PT3H10M30S",
-  "plusMin": "10:45:00.0",
+  "plusMin": "10:45:00",
   "hour": 13
 }
 ```
@@ -354,11 +354,11 @@ datetime("YYYY-MM-DDThh:mm:ss"), compare, +/- duration, fields.
 **output:**
 ```json
 {
-  "dt1": "2017-05-03 13:10:30.0",
-  "dt2": "2017-05-01 10:00:00.0",
+  "dt1": "2017-05-03T13:10:30",
+  "dt2": "2017-05-01T10:00:00",
   "diff": "P2DT3H10M30S",
-  "plus": "2017-05-05 16:10:30.0",
-  "timePart": "13:10:30.0",
+  "plus": "2017-05-05T16:10:30",
+  "timePart": "13:10:30",
   "weekday": 3
 }
 ```
@@ -381,8 +381,8 @@ duration("ISO-8601"). Years–months and days–time kinds; use with dates/times
 {
   "ym": "P1D",
   "dt": "P2DT3H",
-  "addToDate": "2017-05-04 0:00:00.0",
-  "subFromTime": "11:30:00.0"
+  "addToDate": "2017-05-04T00:00:00",
+  "subFromTime": "11:30:00"
 }
 ```
 
