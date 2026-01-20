@@ -1,8 +1,10 @@
 declare global {
   interface EdgeRulesMod {
     ready: Promise<boolean>
-    evaluateAll: (input: string) => unknown
-    evaluateExpression: (expr: string) => unknown
+    init_panic_hook: () => void
+    DecisionEngine: {
+      evaluate: (input: string | object, field?: string | null) => unknown
+    }
   }
 
   interface Window {

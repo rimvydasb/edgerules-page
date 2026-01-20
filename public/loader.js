@@ -19,8 +19,8 @@
 
         const api = {
             ready: Promise.resolve(true),
-            evaluateAll: (input) => mod.DecisionEngine.evaluateAll(input),
-            evaluateExpression: (input) => mod.DecisionEngine.evaluateExpression(input)
+            init_panic_hook: mod.init_panic_hook,
+            DecisionEngine: mod.DecisionEngine
         };
 
         window.__edgeRules = api;

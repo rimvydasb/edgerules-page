@@ -76,16 +76,16 @@ export default function App() {
         }
 
         try {
-            const nonEmptyLines = input.split(/\r?\n/).filter((l) => l.trim() !== '')
-            const result = nonEmptyLines.length === 1
-                ? mod.evaluateExpression(nonEmptyLines[0]!)
-                : mod.evaluateAll(input)
+            const result = mod.DecisionEngine.evaluate(input)
             return { output: formatWasmResult(result), isError: false }
         } catch (err: unknown) {
             if (typeof err === 'object' && err !== null && !(err instanceof Error)) {
                 const anyObj = err as any;
                 if (anyObj.stage === 'linking') {
-                    delete anyObj.message;
+                    // Create a shallow copy to avoid mutating the original error object if it's reused
+                    const errorObj = { ...anyObj };
+                    delete errorObj.message;
+                    return { output: formatWasmResult(errorObj), isError: true }
                 }
                 return { output: formatWasmResult(anyObj), isError: true }
             }

@@ -199,36 +199,14 @@ export class DecisionEngine {
         wasm.__wbg_decisionengine_free(ptr, 0);
     }
     /**
-     * @param {string} code
+     * @param {any} input
+     * @param {string | null} [field]
      * @returns {any}
      */
-    static evaluateAll(code) {
-        const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.decisionengine_evaluateAll(ptr0, len0);
-        return ret;
-    }
-    /**
-     * @param {string} code
-     * @param {string} field
-     * @returns {any}
-     */
-    static evaluateField(code, field) {
-        const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ptr1 = passStringToWasm0(field, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.decisionengine_evaluateField(ptr0, len0, ptr1, len1);
-        return ret;
-    }
-    /**
-     * @param {string} code
-     * @returns {any}
-     */
-    static evaluateExpression(code) {
-        const ptr0 = passStringToWasm0(code, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.decisionengine_evaluateExpression(ptr0, len0);
+    static evaluate(input, field) {
+        var ptr0 = isLikeNone(field) ? 0 : passStringToWasm0(field, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionengine_evaluate(input, ptr0, len0);
         return ret;
     }
 }
@@ -289,6 +267,19 @@ export class DecisionService {
         const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.decisionservice_remove(this.__wbg_ptr, ptr0, len0);
+        return ret !== 0;
+    }
+    /**
+     * @param {string} old_path
+     * @param {string} new_path
+     * @returns {boolean}
+     */
+    rename(old_path, new_path) {
+        const ptr0 = passStringToWasm0(old_path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(new_path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.decisionservice_rename(this.__wbg_ptr, ptr0, len0, ptr1, len1);
         return ret !== 0;
     }
     /**

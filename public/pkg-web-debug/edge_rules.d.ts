@@ -5,9 +5,7 @@ export class DecisionEngine {
   private constructor();
   free(): void;
   [Symbol.dispose](): void;
-  static evaluateAll(code: string): any;
-  static evaluateField(code: string, field: string): any;
-  static evaluateExpression(code: string): any;
+  static evaluate(input: any, field?: string | null): any;
 }
 export class DecisionService {
   free(): void;
@@ -16,6 +14,7 @@ export class DecisionService {
   constructor(model: any);
   set(path: string, object: any): any;
   remove(path: string): boolean;
+  rename(old_path: string, new_path: string): boolean;
   execute(method: string, request: any): any;
   getType(path: string): any;
 }
@@ -26,14 +25,13 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_decisionengine_free: (a: number, b: number) => void;
   readonly __wbg_decisionservice_free: (a: number, b: number) => void;
-  readonly decisionengine_evaluateAll: (a: number, b: number) => any;
-  readonly decisionengine_evaluateExpression: (a: number, b: number) => any;
-  readonly decisionengine_evaluateField: (a: number, b: number, c: number, d: number) => any;
+  readonly decisionengine_evaluate: (a: any, b: number, c: number) => any;
   readonly decisionservice_execute: (a: number, b: number, c: number, d: any) => any;
   readonly decisionservice_get: (a: number, b: number, c: number) => any;
   readonly decisionservice_getType: (a: number, b: number, c: number) => any;
   readonly decisionservice_new: (a: any) => number;
   readonly decisionservice_remove: (a: number, b: number, c: number) => number;
+  readonly decisionservice_rename: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly decisionservice_set: (a: number, b: number, c: number, d: any) => any;
   readonly init_panic_hook: () => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
