@@ -16,6 +16,7 @@ If argument types are not specified, they will be inferred during runtime.
 ```
 
 **output:**
+
 ```json
 {
   "asNumbers": [
@@ -28,6 +29,63 @@ If argument types are not specified, they will be inferred during runtime.
     "b!",
     "c!"
   ]
+}
+```
+
+## Inline Functions
+
+User can define simple single return functions inline without the need for a full function body.
+
+```edgerules
+{
+    func addOne(x): x + 1
+    func doubleAndAddOne(y): addOne(y * 2)
+    result: doubleAndAddOne(3)
+}
+```
+
+**output:**
+
+```json
+{
+  "result": 7
+}
+```
+
+## Return Body Scoping
+
+User can define a specific `return` field in function bodies to define the exact return value, allowing internal
+variables to be hidden.
+
+```edgerules
+{
+    func calculateDiscount(productType): {
+        productDiscounts: [0.20, 0.15, 0.11]
+        campaignDiscount: 0.05
+        activeCampaign: "SUMMER_SALE"
+        baseDiscount: productDiscounts[productType - 1]
+        return: {
+            campaign: activeCampaign
+            discount: baseDiscount + campaignDiscount
+        }
+    }
+    discount1: calculateDiscount(1)
+    discount2: calculateDiscount(2)
+}
+```
+
+**output:**
+
+```json
+{
+  "discount1": {
+    "campaign": "SUMMER_SALE",
+    "discount": 0.25
+  },
+  "discount2": {
+    "campaign": "SUMMER_SALE",
+    "discount": 0.2
+  }
 }
 ```
 
@@ -70,6 +128,7 @@ each function an enclosed context that can be reused and reasoned about independ
 ```
 
 **output:**
+
 ```json
 {
   "detailedCustomer": {
