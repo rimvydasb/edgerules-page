@@ -14,4 +14,5 @@ Live site: https://rimvydasb.github.io/edgerules-page/
 
 ## WASM
 
-- The EdgeRules WASM module is copied from the [main repo](https://github.com/rimvydasb/edgerules) after each release manually.
+- The EdgeRules WASM module is copied from the [main repo](https://github.com/rimvydasb/edgerules) after each release
+  manually.

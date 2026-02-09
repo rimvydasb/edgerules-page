@@ -6,10 +6,15 @@ import { javascript } from '@codemirror/lang-javascript'
 import { json } from '@codemirror/lang-json'
 import { highlightSpecialChars, drawSelection, highlightActiveLine, lineNumbers } from '@codemirror/view'
 import { indentOnInput, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language'
+import LZString from 'lz-string'
+import IosShareIcon from '@mui/icons-material/IosShare'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import { Snackbar, IconButton, Button, Tooltip } from '@mui/material'
 
 interface PlaygroundProps {
     value: string;
     onChange: (value: string) => void;
+    onReset: () => void;
     output: string;
     error: string | null;
     wasmReady: boolean;
@@ -92,7 +97,7 @@ function buildOutputDoc(params: { wasmError: string | null; wasmReady: boolean; 
     return formatJsonLike(output)
 }
 
-export default function Playground({ value, onChange, output, error, wasmReady, wasmError }: PlaygroundProps) {
+export default function Playground({ value, onChange, onReset, output, error, wasmReady, wasmError }: PlaygroundProps) {
     const editorParentRef = useRef<HTMLDivElement | null>(null)
     const editorViewRef = useRef<EditorView | null>(null)
     const changeHandlerRef = useRef(onChange)
@@ -100,7 +105,31 @@ export default function Playground({ value, onChange, output, error, wasmReady, 
     const outputParentRef = useRef<HTMLDivElement | null>(null)
     const outputViewRef = useRef<EditorView | null>(null)
 
+    const [snackbarOpen, setSnackbarOpen] = React.useState(false)
+
     const outputDoc = useMemo(() => buildOutputDoc({ wasmError, wasmReady, error, output }), [wasmError, wasmReady, error, output])
+
+    const handleShare = () => {
+        const compressed = LZString.compressToEncodedURIComponent(value);
+        const url = new URL(window.location.href);
+        url.searchParams.set('h', compressed);
+        const urlStr = url.toString();
+
+        window.history.replaceState(null, '', urlStr);
+        navigator.clipboard.writeText(urlStr).then(() => {
+            setSnackbarOpen(true)
+        }, () => {
+             // Fallback if clipboard fails
+             window.prompt("Copy this URL to share:", urlStr);
+        });
+    };
+
+    const handleCloseSnackbar = (_event?: React.SyntheticEvent | Event, reason?: string) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
 
     useEffect(() => {
         changeHandlerRef.current = onChange
@@ -172,6 +201,46 @@ export default function Playground({ value, onChange, output, error, wasmReady, 
         <>
             <div className="example-row-header">
                 <h3 className="example-title"># Playground</h3>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <Tooltip title="Reset to initial state">
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<RestartAltIcon />}
+                            onClick={onReset}
+                            sx={{
+                                color: 'var(--text)',
+                                borderColor: 'var(--border)',
+                                '&:hover': {
+                                    borderColor: 'var(--text)',
+                                    backgroundColor: 'rgba(0,0,0,0.04)'
+                                },
+                                textTransform: 'none',
+                                fontFamily: 'inherit'
+                            }}
+                        >
+                            Reset
+                        </Button>
+                    </Tooltip>
+                    <Tooltip title="Share current state">
+                        <Button
+                            size="small"
+                            variant="contained"
+                            startIcon={<IosShareIcon />}
+                            onClick={handleShare}
+                            sx={{
+                                backgroundColor: '#111827',
+                                '&:hover': {
+                                    backgroundColor: '#1f2937'
+                                },
+                                textTransform: 'none',
+                                fontFamily: 'inherit'
+                            }}
+                        >
+                            Share
+                        </Button>
+                    </Tooltip>
+                </div>
             </div>
             <section className="example-row playground-row">
                 <div className="example-col example-editor playground-col playground-col-input">
@@ -186,6 +255,13 @@ export default function Playground({ value, onChange, output, error, wasmReady, 
                     </div>
                 </div>
             </section>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={handleCloseSnackbar}
+                message="Link copied to clipboard"
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            />
         </>
     )
 }

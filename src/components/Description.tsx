@@ -10,9 +10,29 @@ const mapBoldSegments = (text: string, keyPrefix: string): React.ReactNode[] => 
     const parts = text.split('**')
     return parts.map((part, idx) => (
         idx % 2 === 1
-            ? <strong key={`${keyPrefix}-strong-${idx}`}>{part}</strong>
+            ? <strong key={`${keyPrefix}-strong-${idx}`}>{mapCodeSegments(part, `${keyPrefix}-strong-${idx}-code`)}</strong>
             : part
     ))
+}
+
+const mapCodeSegments = (text: string, keyPrefix: string): React.ReactNode[] => {
+    if (!text.includes('`')) return [text]
+    const parts = text.split('`')
+    return parts.map((part, idx) => (
+        idx % 2 === 1
+            ? <code key={`${keyPrefix}-code-${idx}`}>{part}</code>
+            : part
+    ))
+}
+
+const parseMarkdown = (text: string, keyPrefix: string): React.ReactNode[] => {
+    const boldNodes = mapBoldSegments(text, keyPrefix)
+    return boldNodes.flatMap((node, idx) => {
+        if (typeof node === 'string') {
+            return mapCodeSegments(node, `${keyPrefix}-s${idx}`)
+        }
+        return node
+    })
 }
 
 const renderDescriptionContent = (desc: string, keyPrefix: string): React.ReactNode[] => {
@@ -31,7 +51,7 @@ const renderDescriptionContent = (desc: string, keyPrefix: string): React.ReactN
             <div className="example-desc__paragraph" key={`${keyPrefix}-paragraph-${paragraphIdx}`}>
                 {lines.map((line, lineIdx) => (
                     <span className="example-desc__line" key={`${keyPrefix}-line-${paragraphIdx}-${lineIdx}`}>
-                        {mapBoldSegments(line, `${keyPrefix}-${paragraphIdx}-${lineIdx}`)}
+                        {parseMarkdown(line, `${keyPrefix}-${paragraphIdx}-${lineIdx}`)}
                     </span>
                 ))}
             </div>

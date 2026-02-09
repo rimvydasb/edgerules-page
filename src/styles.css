@@ -328,6 +328,15 @@ pre {
     font-family: "Fira Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+code {
+    background-color: #f3f4f6;
+    padding: 0.1em 0.3em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    border: 1px solid #e5e7eb;
+    color: var(--text);
+}
+
 /* Buttons (optional) */
 .button {
     display: inline-block;

@@ -2,6 +2,7 @@ import React, {useEffect, useMemo, useRef, useState} from 'react'
 import Editor from 'react-simple-code-editor'
 import Prism from 'prismjs'
 import 'prismjs/components/prism-javascript'
+import LZString from 'lz-string'
 // Using custom bright theme styles in src/styles.css
 import Footer from './components/Footer'
 import Description from './components/Description'
@@ -18,11 +19,32 @@ export default function App() {
     const [examples, setExamples] = useState<Example[]>([])
     const [activeIndex, setActiveIndex] = useState<number>(0)
     const [playgroundInput, setPlaygroundInput] = useState<string>('')
+    const [initialPlaygroundCode, setInitialPlaygroundCode] = useState<string>('')
     const [playgroundOutput, setPlaygroundOutput] = useState<string>('')
     const [playgroundError, setPlaygroundError] = useState<string | null>(null)
 
     const activeItem = CONTENT_PAGES[activeIndex]
     const isPlayground = activeItem?.type === 'playground'
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search)
+        const hParam = params.get('h')
+        if (hParam) {
+            try {
+                const decompressed = LZString.decompressFromEncodedURIComponent(hParam)
+                if (decompressed) {
+                    setPlaygroundInput(decompressed)
+                    setInitialPlaygroundCode(decompressed)
+                    const playgroundIndex = CONTENT_PAGES.findIndex(p => p.type === 'playground')
+                    if (playgroundIndex !== -1) {
+                        setActiveIndex(playgroundIndex)
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to decompress URL param', e)
+            }
+        }
+    }, [])
 
     const highlight = useMemo<((codeStr: string) => string)>(() => (codeStr: string) => {
         try {
@@ -187,6 +209,9 @@ export default function App() {
     useEffect(() => {
         if (!isPlayground) return
 
+        // If we already have content (from URL or previous edit), don't overwrite with default
+        if (playgroundInput.trim().length > 0 || initialPlaygroundCode.length > 0) return
+
         let cancelled = false
 
         const loadPlayground = async () => {
@@ -200,6 +225,7 @@ export default function App() {
                 }
                 const nextValue = firstBlock.codeExample
                 setPlaygroundInput(nextValue)
+                setInitialPlaygroundCode(nextValue)
                 setPlaygroundOutput('')
                 if (nextValue.trim() === '') {
                     setPlaygroundError(null)
@@ -268,6 +294,7 @@ export default function App() {
                         <Playground
                             value={playgroundInput}
                             onChange={onChangePlayground}
+                            onReset={() => onChangePlayground(initialPlaygroundCode)}
                             output={playgroundOutput}
                             error={playgroundError}
                             wasmReady={wasmReady}

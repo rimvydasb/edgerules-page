@@ -1,10 +1,10 @@
 # Date & Time Reference
 
 **EdgeRules** supports the following ISO-8601 style types: **date**, **time**, **datetime**, **duration** and **period**.
-All values are local-time only (no offsets or zones), and all date and time-related operations are deterministic, 
-so they can be executed on the edge environments where timezone or current time information is not available or is not
-reliable. Add the current time information to the EdgeRules context (or decision service request) if needed
-to execute schedules, remainders, and temporal rules.
+Values support local-time and time offsets (e.g. `Z` or `+02:00`), but do not support named time zones (e.g. `America/New_York`).
+All date and time-related operations are deterministic, so they can be executed on edge environments where system clock access
+is not available or not reliable. Add the current time information to the EdgeRules context (or decision service request) if needed
+to execute schedules, reminders, and temporal rules.
 
 ```edgerules
 {
@@ -22,6 +22,36 @@ to execute schedules, remainders, and temporal rules.
   "newTime": "13:10:30",
   "newDateTime": "2024-09-15T13:10:30",
   "sameMoment": true
+}
+```
+
+## Supported datetime Formats
+
+The engine uses a flexible parser that supports the following ISO-8601 / RFC-3339 variations for `datetime`:
+
+- `YYYY-MM-DDTHH:MM:SS` (No offset, defaults to UTC context)
+- `YYYY-MM-DDTHH:MM` (No seconds, defaults to UTC context)
+- `YYYY-MM-DDTHH:MM:SSZ` (Explicit UTC)
+- `YYYY-MM-DDTHH:MM:SS.sssZ` (UTC with subseconds)
+- `YYYY-MM-DDTHH:MM:SS+HH:MM` (Non-UTC offset)
+- `YYYY-MM-DDTHH:MM:SS.sss+HH:MM` (Non-UTC offset with subseconds)
+
+```edgerules
+{
+    utc: datetime("2024-09-15T13:10:30Z")
+    offset: datetime("2024-09-15T13:10:30+02:00")
+    noSeconds: datetime("2024-09-15T13:10+02:00")
+    subseconds: datetime("2024-09-15T13:10:30.123Z")
+}
+```
+
+**output:**
+```json
+{
+  "utc": "2024-09-15T13:10:30",
+  "offset": "2024-09-15T13:10:30+02:00",
+  "noSeconds": "2024-09-15T13:10:00+02:00",
+  "subseconds": "2024-09-15T13:10:30.123"
 }
 ```
 
@@ -291,7 +321,9 @@ period from a duration raises a linking error.
 
 ## Restrictions and Tips
 
-- No time zones, offsets, leap seconds, sub-second precision, or system clock access (`today()` / `now()` are omitted).
+- No named time zones (e.g. `America/New_York`) are supported, but fixed time offsets (e.g. `+02:00`, `Z`) ARE supported.
+- No system clock access (`today()` / `now()` are omitted).
+- No leap seconds.
 - Always keep ISO-8601 formatting (zero-padded month, day, hour). Invalid strings raise runtime errors.
 - Periods are unordered; only `=` and `<>` are valid comparisons.
 - Temporal addition works left-to-right. `date + duration` becomes a datetime, so chain carefully when building rules.
