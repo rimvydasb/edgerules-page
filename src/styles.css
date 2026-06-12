@@ -1,0 +1,588 @@
+:root {
+    --bg: #ffffff;
+    --text: #101418;
+    --muted: #5b6774;
+    --panel: #fafafa;
+    --border: #e5e7eb;
+    --accent: #e42b66;
+}
+
+/* Base & layout */
+html {
+    box-sizing: border-box;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+html, body, #root {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--bg);
+    color: var(--text);
+}
+
+.page {
+    min-height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+}
+
+.header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+}
+
+.header.bright {
+    background-color: #ffffff;
+    background-image: radial-gradient(circle, #e5e5e5 1px, transparent 1px),
+    linear-gradient(
+            135deg,
+            rgba(173, 209, 255, 0.25) 0%, /* blue start */ rgba(255, 255, 255, 0.9) 40%, /* fade to white */ rgba(255, 200, 200, 0.35) 50%, /* narrow pink band */ rgba(255, 255, 255, 0.9) 60%, /* fade back to white */ rgba(173, 209, 255, 0.25) 100% /* blue end */
+    );
+    background-size: 24px 24px, 200% 100%;
+    background-position: 0 0, 100% 0;
+    background-repeat: repeat, no-repeat;
+    animation: gradient-move 20s ease-in-out infinite alternate;
+}
+
+@keyframes gradient-move {
+    0% {
+        background-position: 0 0, 100% 0;
+    }
+    100% {
+        background-position: 0 0, 0 0;
+    }
+}
+
+.header h1 {
+    margin: 0 0 6px;
+    font-size: 36px;
+    font-weight: normal;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.header p {
+    margin: 0;
+    color: var(--muted);
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Header menu */
+.header__nav {
+    margin-top: 12px;
+}
+
+.header__menu {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    justify-content: center;
+}
+
+.header__menu-btn {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
+.header__menu-btn--playground {
+    border: 1px solid #F87171FF;
+    color: #fff;
+    background-color: #F87171FF;
+    background-size: 160% 160%;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.header__menu-btn:hover {
+    border-color: #d1d5db;
+    background-image: linear-gradient(135deg, #D1D5DBFF 0%, #e4e8ed 35%, #D1D5DBFF 100%);
+}
+
+.header__menu-btn--playground:hover {
+    border-color: #ef4444;
+    background-image: linear-gradient(135deg, #fca5a5 0%, #f87171 35%, #dc2626 100%);
+    background-position: 100% 50%;
+    box-shadow: 0 0 18px rgba(239, 68, 68, 0.65);
+}
+
+.header__menu li.active .header__menu-btn {
+    /*background: var(--text);*/
+    color: #fff;
+    border-color: var(--text);
+    background-color: #111827;
+    background-image: linear-gradient(
+            135deg,
+            #111827 0%, /* base dark */ #111827 40%, /* stable dark region */ rgba(30, 64, 175, 0.25) 50%, /* deep navy highlight */ #111827 60%, /* fade back to dark */ #111827 100% /* base dark end */
+    );
+    background-size: 200% 100%;
+    background-position: 100% 0;
+    animation: footer-glow 20s ease-in-out infinite alternate;
+}
+
+.header__menu li.active .header__menu-btn--playground {
+    border-color: #b91c1c;
+    background-image: linear-gradient(135deg, #fca5a5 0%, #f87171 35%, #dc2626 100%);
+    box-shadow: 0 0 20px rgba(248, 113, 113, 0.7);
+    animation: none;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+.container .playground {
+    width: 100%;
+    padding: 16px;
+}
+
+.container__content {
+    width: 940px;
+    max-width: 100%;
+    padding: 16px;
+}
+
+.container_editor_area {
+    tab-size: 4ch;
+    max-height: 400px;
+    overflow: auto;
+    margin: 18px 0;
+}
+
+.editor,
+.container__editor {
+    font-size: 12px;
+    font-variant-ligatures: common-ligatures;
+    background-color: var(--bg);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.editor.readonly {
+    background-color: var(--panel);
+}
+
+.container__editor textarea {
+    outline: 0;
+}
+
+.output-wrap {
+    padding: 0 16px 20px;
+}
+
+.output-wrap h2 {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.output {
+    margin: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    color: var(--text);
+    white-space: pre-wrap;
+    font-size: 12px;
+    font-variant-ligatures: common-ligatures;
+    tab-size: 4ch;
+    overflow: auto;
+}
+
+/* Footer */
+.footer {
+    position: relative;
+    background-color: #111827; /* base dark */
+    color: #e5e7eb;
+    padding: 40px 0;
+
+    /* gradient layer */
+    background-position: 100% 0;
+    animation: footer-glow 20s ease-in-out infinite alternate;
+
+    /* grid overlay */
+    --grid-cell: 20px;
+    --grid-color: #111827; /* same as background color */
+    --grid-opacity: 1;     /* full coverage to hide lines */
+    background-image:
+            linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+            linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px),
+            linear-gradient(
+                    135deg,
+                    #111827 0%,
+                    #434E71FF 40%,
+                    #77819a 50%,
+                    #434E71FF 60%,
+                    #111827 100%
+            );
+    background-size:
+            var(--grid-cell) var(--grid-cell),
+            var(--grid-cell) var(--grid-cell),
+            200% 100%;
+    background-blend-mode: overlay;
+}
+
+@keyframes footer-glow {
+    0% {
+        background-position: 0 0, 0 0, 100% 0;
+    }
+    100% {
+        background-position: 0 0, 0 0, 0 0;
+    }
+}
+
+.footer__inner {
+    max-width: 1024px; /* ~max-w-6xl */
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
+.footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 640px) {
+    .footer__grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.footer__title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #cbd5e1; /* slate-300 */
+    margin-bottom: 12px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+}
+
+.footer__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.footer__link {
+    color: #d1d5db; /* neutral-300 */
+    text-decoration: none;
+}
+
+.footer__link:hover {
+    color: #ffffff;
+}
+
+.footer__bottom {
+    border-top: 1px solid #1f2937; /* neutral-800 */
+    margin-top: 32px;
+    padding-top: 16px;
+    text-align: center;
+    color: #9ca3af; /* neutral-400 */
+    font-size: 12px;
+}
+
+.footer__copyright {
+    margin-top: 4px;
+}
+
+/* Prefer Fira Mono (or Fira Code) for code */
+.editor,
+.editor textarea,
+.editor pre,
+.container__editor,
+.container__editor textarea,
+.container__editor pre,
+code,
+pre {
+    font-family: "Fira Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+code {
+    background-color: #f3f4f6;
+    padding: 0.1em 0.3em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    border: 1px solid #e5e7eb;
+    color: var(--text);
+}
+
+/* Buttons (optional) */
+.button {
+    display: inline-block;
+    padding: 0 6px;
+    text-decoration: none;
+    background: #000;
+    color: #fff;
+}
+
+.button:hover {
+    background: linear-gradient(45deg, #e42b66, #e2433f);
+}
+
+/* Prism bright token theme (from provided CSS) */
+.token.cdata,
+.token.comment,
+.token.doctype,
+.token.prolog {
+    color: #90a4ae;
+}
+
+.token.punctuation {
+    color: #9e9e9e;
+}
+
+.namespace {
+    opacity: .7;
+}
+
+.token.boolean,
+.token.constant,
+.token.deleted,
+.token.number,
+.token.property,
+.token.symbol,
+.token.tag {
+    color: #e91e63;
+}
+
+.token.attr-name,
+.token.builtin,
+.token.char,
+.token.inserted,
+.token.selector,
+.token.string {
+    color: #4caf50;
+}
+
+.language-css .token.string,
+.style .token.string,
+.token.entity,
+.token.operator,
+.token.url {
+    color: #795548;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+    color: #3f51b5;
+}
+
+.token.function {
+    color: #f44336;
+}
+
+.token.important,
+.token.regex,
+.token.variable {
+    color: #ff9800;
+}
+
+.token.bold,
+.token.important {
+    font-weight: 700;
+}
+
+.token.italic {
+    font-style: italic;
+}
+
+.token.entity {
+    cursor: help;
+}
+
+/* Examples layout */
+.example-row {
+    display: flex;
+    gap: 16px;
+    align-items: stretch; /* makes all columns the same height */
+    margin: 16px 0 28px;
+    /* allow a full-width top row (description) above editors */
+    flex-wrap: wrap;
+}
+
+/* header row container (fix selector bug: this belongs outside .example-row) */
+.example-row-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.example-row-header h3 {
+    font-weight: normal;
+}
+
+.example-col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* keep both editors equal height */
+.example-row .container__editor {
+    flex: 1 1 auto;
+    height: 100%;
+}
+
+.example-row .top-row {
+    /* make the description span the full width on its own row */
+    flex: 0 0 100%;
+    width: 100%;
+    margin-top: 0;
+    display: block;
+}
+
+/* ↦ arrow column between editors */
+.example-arrow {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    user-select: none;
+}
+
+.arrow-glyph {
+    font-size: 20px;
+    line-height: 1;
+    user-select: none;
+    font-weight: normal !important;
+}
+
+.example-title {
+    margin: 0 0 6px;
+    font-size: 14px;
+}
+
+.example-desc {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.example-desc__paragraph {
+    margin: 0 0 8px;
+}
+
+.example-desc__paragraph:last-child {
+    margin-bottom: 0;
+}
+
+.example-desc__line {
+    display: block;
+}
+
+.no-wrap {
+    white-space: pre !important; /* keep lines intact */
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+}
+
+.playground-row {
+    flex-wrap: nowrap;
+    gap: 24px;
+}
+
+.playground-col {
+    display: flex;
+    flex-direction: column;
+    min-height: 360px;
+}
+
+.playground-col-input {
+    flex: 2 1 0;
+}
+
+.playground-col-output {
+    flex: 1 1 0;
+}
+
+.playground-editor-shell,
+.playground-output-shell {
+    display: flex;
+    flex: 1 1 auto;
+    padding: 0;
+}
+
+.playground-editor-shell .cm-editor,
+.playground-output-shell .cm-editor {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    font-family: '"Fira Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace';
+    font-size: 12px;
+}
+
+.playground-editor-shell .cm-editor {
+    background-color: var(--bg);
+}
+
+.playground-output-shell .cm-editor {
+    background-color: var(--panel);
+}
+
+.playground-editor-shell .cm-editor .cm-scroller,
+.playground-output-shell .cm-editor .cm-scroller {
+    padding: 0px;
+    overflow: auto;
+}
+
+.playground-editor-view {
+    flex: 1 1 auto;
+}
+
+/* Responsive: stack columns on small screens; rotate arrow */
+@media (max-width: 720px) {
+    .example-row {
+        /* on small screens, stack naturally without wrap tricks */
+        flex-direction: column;
+    }
+
+    /* reset the top row behavior when stacked */
+    .example-row .top-row {
+        flex: 0 0 auto;
+        width: 100%;
+    }
+
+    .example-arrow {
+        min-width: 0;
+        padding: 0px 0;
+    }
+
+    .arrow-glyph {
+        transform: rotate(90deg);
+    }
+}
