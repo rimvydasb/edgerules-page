@@ -67,13 +67,25 @@ export const FEATURES: Feature[] = [
     {
         glyph: 'wasm',
         title: 'Tiny WASM footprint',
-        text: 'Built with opt-level "z", LTO, and wasm-opt -Oz — suitable for serverless cold starts and '
-            + 'browser bundles.',
+        text: 'About 740 KB (~295 KB gzipped) without the optimisation solver. Built with opt-level "z", LTO, '
+            + 'and wasm-opt -Oz — suitable for serverless cold starts and browser bundles.',
     },
     {
         glyph: '0.3',
         title: 'Exact arithmetic',
         text: 'Financial calculations use rust_decimal, so 0.1 + 0.2 = 0.3. No floating-point surprises.',
+    },
+    {
+        glyph: 'max',
+        title: 'Built-in optimisation',
+        text: 'Declare linear and integer optimisation problems with optimise; rules compute the coefficients, '
+            + 'the HiGHS solver picks the best values.',
+    },
+    {
+        glyph: '100+',
+        title: 'Rich function library',
+        text: 'Over a hundred built-in functions for numbers, strings, lists, dates, and finance — from '
+            + 'round and regexReplace to groupBy, irr, and amortizationSchedule.',
     },
 ]
 

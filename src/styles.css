@@ -781,7 +781,7 @@ code {
 /* Feature cards */
 .fp-features {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
 }
 
@@ -998,6 +998,12 @@ code {
 .fp-cta__text {
     margin: 0 0 20px;
     color: #9ca3af;
+}
+
+@media (max-width: 1000px) {
+    .fp-features {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 @media (max-width: 860px) {
