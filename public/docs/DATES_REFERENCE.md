@@ -1,10 +1,10 @@
 # Date & Time Reference
 
-**EdgeRules** supports the following ISO-8601 style types: **date**, **time**, **datetime**, **duration** and **period**.
-Values support local-time and time offsets (e.g. `Z` or `+02:00`), but do not support named time zones (e.g. `America/New_York`).
-All date and time-related operations are deterministic, so they can be executed on edge environments where system clock access
-is not available or not reliable. Add the current time information to the EdgeRules context (or decision service request) if needed
-to execute schedules, reminders, and temporal rules.
+**EdgeRules** supports the following ISO-8601 style types: **date**, **time**, **datetime**, **duration** and
+**period**. Values support local-time and time offsets (e.g. `Z` or `+02:00`), but do not support named time zones (e.g.
+`America/New_York`). All date and time-related operations are deterministic, so they can be executed on edge
+environments where system clock access is not available or not reliable. Add the current time information to the
+EdgeRules context (or decision service request) if needed to execute schedules, reminders, and temporal rules.
 
 ```edgerules
 {
@@ -16,6 +16,7 @@ to execute schedules, reminders, and temporal rules.
 ```
 
 **output:**
+
 ```json
 {
   "newDate": "2024-09-15",
@@ -46,6 +47,7 @@ The engine uses a flexible parser that supports the following ISO-8601 / RFC-333
 ```
 
 **output:**
+
 ```json
 {
   "utc": "2024-09-15T13:10:30",
@@ -75,6 +77,7 @@ prints as **PT1H30M**.
 ```
 
 **output:**
+
 ```json
 {
   "ymOnly": "P1Y6M",
@@ -130,6 +133,7 @@ Datetime `.time` returns a concrete `time(...)` value, while `.date` returns a `
 ```
 
 **output:**
+
 ```json
 {
   "dateParts": {
@@ -143,13 +147,12 @@ Datetime `.time` returns a concrete `time(...)` value, while `.date` returns a `
     "minute": 10,
     "second": 30
   },
-        "datetimeParts": {
-          "month": 12,
-          "hour": 15,
-          "timeOnly": "15:37:00",
-          "dateOnly": "2016-12-09"
-        }
-  ,
+  "datetimeParts": {
+    "month": 12,
+    "hour": 15,
+    "timeOnly": "15:37:00",
+    "dateOnly": "2016-12-09"
+  },
   "durationParts": {
     "hours": 1,
     "minutes": 30,
@@ -190,6 +193,7 @@ Mixing incompatible types (for example, comparing a `date` to a `time` or a `dur
 ```
 
 **output:**
+
 ```json
 {
   "dateCompare": {
@@ -238,6 +242,7 @@ In these examples, `subtractDates` evaluates to `PT16H`, `dateMinusDate` to `PT2
 ```
 
 **output:**
+
 ```json
 {
   "subtractDates": "PT16H",
@@ -273,6 +278,7 @@ period from a duration raises a linking error.
 ```
 
 **output:**
+
 ```json
 {
   "addPeriodToDate": "2020-02-29",
@@ -287,41 +293,113 @@ period from a duration raises a linking error.
 
 ## Calendar Helpers
 
-- **calendarDiff** always returns a `period`, preserving sign. `monthOfYear` and `dayOfWeek` return English names.
-- **lastDayOfMonth** yields the day number for the month (28 for February 2025, 29 when leap year rules apply).
+- **calendarDiff** always returns a `period`, preserving sign.
+- **dayOfWeek** follows ISO 8601: 1 = Monday … 7 = Sunday. **weekOfYear** uses ISO 8601 week numbering.
+- **daysInMonth** yields the length of the date's month (28 for February 2025, 29 when leap year rules apply).
 
 ```edgerules
 {
-    names: {
-        month: monthOfYear(date("2025-09-02"))
+    fields: {
         weekday: dayOfWeek(date("2025-09-02"))
+        ordinal: dayOfYear(date("2025-09-02"))
+        week: weekOfYear(date("2025-09-02"))
+        q: quarter(date("2025-09-02"))
     }
     calendarDiffs: {
         forward: calendarDiff(date("2000-05-03"), date("2025-09-10"))
         backward: calendarDiff(date("2025-03-10"), date("2024-01-15"))
     }
-    lastDom: lastDayOfMonth(date("2025-02-10"))
+    lastDom: daysInMonth(date("2025-02-10"))
+    leap: isLeapYear(date("2024-02-10"))
 }
 ```
 
 **output:**
+
 ```json
 {
-  "names": {
-    "month": "September",
-    "weekday": "Tuesday"
+  "fields": {
+    "weekday": 2,
+    "ordinal": 245,
+    "week": 36,
+    "q": 3
   },
   "calendarDiffs": {
     "forward": "P25Y4M7D",
     "backward": "-P1Y1M23D"
   },
-  "lastDom": 28
+  "lastDom": 28,
+  "leap": true
+}
+```
+
+## Period Boundaries
+
+`startOfWeek` / `endOfWeek` snap to the ISO week (Monday..Sunday); the month, quarter and year variants behave
+accordingly.
+
+```edgerules
+{
+    week: [startOfWeek(date("2026-06-12")), endOfWeek(date("2026-06-12"))]
+    month: [startOfMonth(date("2026-06-12")), endOfMonth(date("2026-06-12"))]
+    quarter: [startOfQuarter(date("2026-06-12")), endOfQuarter(date("2026-06-12"))]
+    year: [startOfYear(date("2026-06-12")), endOfYear(date("2026-06-12"))]
+}
+```
+
+**output:**
+
+```json
+{
+  "week": ["2026-06-08", "2026-06-14"],
+  "month": ["2026-06-01", "2026-06-30"],
+  "quarter": ["2026-04-01", "2026-06-30"],
+  "year": ["2026-01-01", "2026-12-31"]
+}
+```
+
+## Business Days & Age
+
+Deterministic by design: "today" must arrive as a request input, and holiday calendars are passed as date-list
+arguments, never fetched.
+
+- **isWeekend** — Saturday or Sunday.
+- **isBusinessDay(date[, holidays])** — a weekday that is not in the holiday list.
+- **businessDaysBetween(d1, d2[, holidays])** — counts business days in the **inclusive** range `[d1, d2]` (Excel
+  `NETWORKDAYS` semantics); negative when `d2` precedes `d1`.
+- **addBusinessDays(date, n[, holidays])** — moves `n` business days forward (backward for negative `n`), skipping
+  weekends and holidays.
+- **age(birthDate, asOf)** — whole years between the dates (the KYC staple); `Invalid` when `asOf` precedes the birth
+  date.
+
+```edgerules
+{
+    holidays: [date("2026-06-12")]
+    weekend: isWeekend(date("2026-06-13"))
+    open: isBusinessDay(date("2026-06-12"), holidays)
+    working: businessDaysBetween(date("2026-06-08"), date("2026-06-14"), holidays)
+    due: addBusinessDays(date("2026-06-11"), 1, holidays)
+    years: age(date("2000-06-13"), date("2026-06-12"))
+}
+```
+
+**output:**
+
+```json
+{
+  "holidays": ["2026-06-12"],
+  "weekend": true,
+  "open": false,
+  "working": 4,
+  "due": "2026-06-15",
+  "years": 25
 }
 ```
 
 ## Restrictions and Tips
 
-- No named time zones (e.g. `America/New_York`) are supported, but fixed time offsets (e.g. `+02:00`, `Z`) ARE supported.
+- No named time zones (e.g. `America/New_York`) are supported, but fixed time offsets (e.g. `+02:00`, `Z`) ARE
+  supported.
 - No system clock access (`today()` / `now()` are omitted).
 - No leap seconds.
 - Always keep ISO-8601 formatting (zero-padded month, day, hour). Invalid strings raise runtime errors.

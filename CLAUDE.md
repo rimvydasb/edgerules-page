@@ -15,6 +15,7 @@ via the EdgeRules WebAssembly module. Deployed to GitHub Pages: https://rimvydas
 - Preview build: `npm run preview`
 - Typecheck: `npm run typecheck` (`tsc --noEmit`)
 - Test: `npm test` (Jest, runs files under `tests/**/*.test.ts`)
+- Backtest doc examples against the engine: `npm run check:docs`
 - Run a single test file: `npx jest tests/parseBaseExamples.test.ts`
 - Dev server: `npm run dev` — **do not run this yourself**; use `npm run build` to verify code instead.
   `tests/devServerSmoke.test.ts` expects a dev server already running at `http://localhost:5173/edgerules-page/`
@@ -25,7 +26,10 @@ via the EdgeRules WebAssembly module. Deployed to GitHub Pages: https://rimvydas
 ### Markdown-driven content pipeline
 
 - `src/content/pages.ts`: menu definition — each entry is either a content page (`contentReference` →
-  a path under `public/`) or the special `{ type: 'playground' }` entry.
+  a path under `public/`) or one of the special `{ type: 'index' }` / `{ type: 'playground' }` entries.
+  Pages are addressed by URL hash slugs derived from `menuTitle` (`# User Types` → `#user-types`); menu and
+  in-page links are plain `#slug` anchors, and `App.tsx` follows `hashchange`. With no hash the front page
+  (`#index`) opens, unless a shared `?h=` playground link is present.
 - `src/utils/parseBaseExamples.ts`:
   - `fetchMarkdown` — loads a markdown file, respecting the Vite base URL via `getBaseUrl()` (works in
     dev and on GitHub Pages).
@@ -41,31 +45,40 @@ via the EdgeRules WebAssembly module. Deployed to GitHub Pages: https://rimvydas
 - To add a new example: edit the relevant Markdown file under `public/docs/`; no rebuild needed in dev.
   To add a new page: create the Markdown file and register it in `src/content/pages.ts`.
 
+### Front page (`#index`)
+
+- `src/components/FrontPage.tsx` renders the landing page; its copy and examples live in `src/content/frontPage.ts`
+  (adapted from the core repo README, up to "Built-in Function Library").
+- The Introduction example is not duplicated: it is the first code block of `public/docs/BASE_EXAMPLES.md`.
+- `src/components/LiveExample.tsx` is a self-contained editable input ↦ evaluated output pair used by the front page;
+  `src/components/CodeEditor.tsx` holds the shared editor component, style, and Prism highlighter.
+
 ### App shell and evaluation flow (`src/App.tsx`)
 
 - Loads the markdown for the active page, converts each `BaseExample` into an `Example`, and renders two
   CodeMirror/`react-simple-code-editor` panes per example: editable input (left) and read-only output
   (right).
-- WASM evaluation: when the module is ready, a single non-empty line uses `mod.DecisionEngine.evaluate`
-  for the single-expression path; otherwise the full input is evaluated as a program. Errors (including
-  linking-stage errors) are caught and rendered via `formatWasmResult` in the output panel.
+- Evaluation: once the engine is loaded, every example is evaluated asynchronously via `evaluateSource`; results
+  and errors are rendered via `formatWasmResult` in the output panel.
 - Playground tab (`type: 'playground'` page, `src/components/Playground.tsx`): seeded from
   `public/docs/PLAYGROUND.md`'s first code block. Supports sharing state via the `?h=` URL query param,
   compressed/decompressed with `lz-string` (`LZString.compressToEncodedURIComponent` /
   `decompressFromEncodedURIComponent`).
 
-### WASM integration
+### EdgeRules engine (npm)
 
-- `index.html` loads a bootstrap module script that sets `window.__VITE_BASE_URL__` and dynamically loads
-  `public/loader.js` (with cache-busting query params computed in `vite.config.js` from the WASM/JS file
-  size+mtime).
-- `loader.js` initializes the EdgeRules WASM module and exposes it as `window.__edgeRules`, then dispatches
-  `edgerules-ready` (or `edgerules-error`) on `window`.
-- `src/App.tsx` listens for these events, awaits `mod.ready`, and stores the module in a ref for all
-  evaluation calls. All evaluation happens client-side in the browser.
-- The WASM bundle (`public/pkg-web/`, plus `public/pkg-web-debug/`) is copied manually from the
-  [main EdgeRules repo](https://github.com/rimvydasb/edgerules) after each release — it is not built by
-  this repo's tooling.
+- The engine comes from the `@edgerules/web` npm package (plus `@edgerules/portable` types); keep its version in
+  sync with `edgerules-react`. Check for updates with `npm view @edgerules/web dist-tags`.
+- `src/utils/engine.ts`: `loadEngine()` awaits `init()` (fetches the WASM, bundled by Vite) and returns a service
+  factory. Models declaring an `optimise` element (`service.requiresSolver()`) get highs-js registered as solver;
+  `highs` and its WASM are lazy-loaded only then.
+- `src/utils/evaluate.ts`: `evaluateSource` runs a `{ ... }` model as-is and wraps a bare expression as
+  `{ result: <expr> }`, returning only `result` (same convention as the core repo's reference backtest).
+  `execute` is async; thrown parse/link errors are normalized to `{ '@kind': 'error', type, message }`.
+- `vite.config.js` excludes `@edgerules/web` and `highs` from `optimizeDeps` so their `.wasm` files resolve.
+- Reference docs in `public/docs/` are copied from the core repo's `doc/reference/` (excluding `_REFERENCE.md` and
+  host-facing `OPTIMISE_SOLVER_HOSTING.md`). `npm run check:docs` backtests every example that has an
+  `**output:**` (or `**output (`field`):**`) block against `@edgerules/node` + highs-js.
 
 ### Deployment
 

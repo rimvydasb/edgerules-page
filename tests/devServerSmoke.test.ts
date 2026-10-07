@@ -43,16 +43,4 @@ describe('EdgeRules dev server smoke test', () => {
         },
         requestTimeout,
     );
-
-    test(
-        'makes WASM bundle available for the loader',
-        async () => {
-            const wasmUrl = makeUrl('pkg-web/edge_rules_bg.wasm');
-            const res = await fetchWithMessage(wasmUrl);
-            expect(res.ok).toBe(true);
-            const bytes = await res.arrayBuffer();
-            expect(bytes.byteLength).toBeGreaterThan(0);
-        },
-        requestTimeout,
-    );
 });

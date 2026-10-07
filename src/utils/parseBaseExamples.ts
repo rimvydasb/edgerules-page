@@ -3,6 +3,8 @@ import type { BaseExample } from '../examples/types'
 export class ExampleBlock {
     pageTitle: string | null;
     sectionTitle: string | null;
+    /** Field of the result the documented output shows, from an `**output (`field`):**` marker. */
+    outputSelector: string | null = null;
 
     private _descriptionLines: string[];
     private _codeLines: string[];
@@ -20,14 +22,23 @@ export class ExampleBlock {
         return new ExampleBlock(null, null);
     }
 
-    static create({ pageTitle = null, sectionTitle = null, description = '', codeExample = '', output = '' }: {
+    static create({
+        pageTitle = null,
+        sectionTitle = null,
+        description = '',
+        codeExample = '',
+        output = '',
+        outputSelector = null,
+    }: {
         pageTitle?: string | null;
         sectionTitle?: string | null;
         description?: string;
         codeExample?: string;
         output?: string;
+        outputSelector?: string | null;
     }): ExampleBlock {
         const b = new ExampleBlock(pageTitle, sectionTitle);
+        b.outputSelector = outputSelector;
         if (description && description.length > 0) {
             b.setDescription(description);
         }
@@ -140,6 +151,7 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
             description: current.description,
             codeExample: current.codeExample,
             output: current.getOutput(),
+            outputSelector: current.outputSelector,
         }));
 
         // reset
@@ -222,12 +234,16 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
                 continue;
             }
 
-            // contains only the word "output:" or "**output:**"
-            if (line.match(/^output:\s*$/i) || line.match(/^\*\*output:\*\*\s*$/i)) {
+            // contains only the word "output:" or "**output:**", optionally naming a result field:
+            // "**output (`field`):**"
+            const outputMarker = line.match(/^output:\s*$/i)
+                ?? line.match(/^\*\*output(?:\s*\(`([^`]+)`\))?:\*\*\s*$/i);
+            if (outputMarker) {
                 // start collecting output lines for the current block
                 isOutputSection = true;
                 // clear any previous output capture for this block
                 current.clearOutput();
+                current.outputSelector = outputMarker[1] ?? null;
                 continue;
             }
 
@@ -298,7 +314,12 @@ export interface PlaygroundContentMenuItem {
     type: 'playground';
 }
 
-export type ContentMenuItem = MarkdownContentMenuItem | PlaygroundContentMenuItem;
+export interface IndexContentMenuItem {
+    menuTitle: string;
+    type: 'index';
+}
+
+export type ContentMenuItem = MarkdownContentMenuItem | PlaygroundContentMenuItem | IndexContentMenuItem;
 
 export function isMarkdownContentMenuItem(item: ContentMenuItem): item is MarkdownContentMenuItem {
     return (item as MarkdownContentMenuItem).contentReference !== undefined;
@@ -320,6 +341,7 @@ export function toSlug(s: string): string {
 
 /** Map parsed blocks to BaseExample records. */
 export function mapBlocksToBaseExamples(blocks: ExampleBlock[]): BaseExample[] {
+    const idCounts = new Map<string, number>()
     return blocks.map((b, idx): BaseExample => {
         const title = b.sectionTitle
             ? b.sectionTitle
@@ -327,7 +349,11 @@ export function mapBlocksToBaseExamples(blocks: ExampleBlock[]): BaseExample[] {
         const idBase = b.sectionTitle
             ? b.sectionTitle
             : (b.pageTitle ?? `example-${idx + 1}`)
-        const id = toSlug(idBase)
+        // Several examples may share one section; suffix repeats so ids stay unique
+        const slug = toSlug(idBase)
+        const count = (idCounts.get(slug) ?? 0) + 1
+        idCounts.set(slug, count)
+        const id = count === 1 ? slug : `${slug}-${count}`
         return { id, title, description: b.description, codeExample: b.codeExample }
     })
 }

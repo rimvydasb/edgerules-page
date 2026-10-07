@@ -9,6 +9,7 @@ abs(-5)
 ```
 
 **output:**
+
 ```json
 5
 ```
@@ -27,6 +28,7 @@ Rounds to digits (default 0). Ties move to the nearest even number (Banker's Rou
 ```
 
 **output:**
+
 ```json
 {
   "r1": 2,
@@ -48,6 +50,7 @@ Rounds away from zero.
 ```
 
 **output:**
+
 ```json
 {
   "neg": -2,
@@ -67,10 +70,53 @@ Rounds toward zero. Alias of `trunc`.
 ```
 
 **output:**
+
 ```json
 {
   "neg": -1,
   "pos": 1
+}
+```
+
+## roundHalfUp
+
+Legal/commercial rounding (HALF_UP): ties move away from zero, unlike the Banker's rounding of `round`.
+
+```edgerules
+{
+    r1: roundHalfUp(2.5)
+    r2: roundHalfUp(2.345, 2)
+    r3: roundHalfUp(-2.5)
+}
+```
+
+**output:**
+
+```json
+{
+  "r1": 3,
+  "r2": 2.35,
+  "r3": -3
+}
+```
+
+## toFixed
+
+Fixed-decimal rendering for documents: rounds half-up and keeps trailing zeros. Returns a **string**.
+
+```edgerules
+{
+    price: toFixed(2.5, 2)
+    whole: toFixed(1234.5, 0)
+}
+```
+
+**output:**
+
+```json
+{
+  "price": "2.50",
+  "whole": "1235"
 }
 ```
 
@@ -86,6 +132,7 @@ Rounds toward −∞. The largest integer ≤ number.
 ```
 
 **output:**
+
 ```json
 {
   "neg": -2,
@@ -105,6 +152,7 @@ Rounds toward +∞. The smallest integer ≥ number.
 ```
 
 **output:**
+
 ```json
 {
   "neg": -1,
@@ -124,6 +172,7 @@ Removes the fractional part. Equivalent to `roundDown(number, 0)`.
 ```
 
 **output:**
+
 ```json
 {
   "neg": -1,
@@ -144,6 +193,7 @@ Returns the remainder. Sign matches the divisor `b`. Align with `idiv` & Python 
 ```
 
 **output:**
+
 ```json
 {
   "pos": 1,
@@ -164,6 +214,7 @@ Integer division. Returns `floor(a / b)`.
 ```
 
 **output:**
+
 ```json
 {
   "pos": 2,
@@ -180,6 +231,7 @@ sqrt(16)
 ```
 
 **output:**
+
 ```json
 4
 ```
@@ -197,11 +249,37 @@ Returns `min` if `n < min`, `max` if `n > max`, else `n`. Restricts to closed in
 ```
 
 **output:**
+
 ```json
 {
   "low": 1,
   "mid": 3,
   "high": 4
+}
+```
+
+## between
+
+Inclusive range check on both bounds — the everyday eligibility shorthand. Works on any ordered type: numbers, strings,
+dates, times and datetimes.
+
+```edgerules
+{
+    a: between(25, 18, 65)
+    b: between(17, 18, 65)
+    c: between(18, 18, 65)
+    d: between(date("2026-06-12"), date("2026-01-01"), date("2026-12-31"))
+}
+```
+
+**output:**
+
+```json
+{
+  "a": true,
+  "b": false,
+  "c": true,
+  "d": true
 }
 ```
 
@@ -214,6 +292,7 @@ ln(2.718281828459045)
 ```
 
 **output:**
+
 ```json
 1
 ```
@@ -227,6 +306,7 @@ log10(100)
 ```
 
 **output:**
+
 ```json
 2
 ```
@@ -240,8 +320,9 @@ exp(1)
 ```
 
 **output:**
+
 ```json
-2.718281826198493
+2.718281828459045
 ```
 
 ## pi
@@ -253,6 +334,7 @@ pi()
 ```
 
 **output:**
+
 ```json
 3.141592653589793
 ```
@@ -266,6 +348,7 @@ degrees(pi())
 ```
 
 **output:**
+
 ```json
 180
 ```
@@ -279,6 +362,7 @@ radians(180)
 ```
 
 **output:**
+
 ```json
 3.141592653589793
 ```
@@ -292,6 +376,7 @@ sin(pi() / 2)
 ```
 
 **output:**
+
 ```json
 1
 ```
@@ -305,6 +390,7 @@ cos(pi())
 ```
 
 **output:**
+
 ```json
 -1
 ```
@@ -318,6 +404,7 @@ tan(pi() / 4)
 ```
 
 **output:**
+
 ```json
 0.9999999956815324
 ```
@@ -331,6 +418,7 @@ asin(1)
 ```
 
 **output:**
+
 ```json
 1.5707963267948966
 ```
@@ -344,6 +432,7 @@ acos(-1)
 ```
 
 **output:**
+
 ```json
 3.141592653589793
 ```
@@ -357,19 +446,22 @@ atan(1)
 ```
 
 **output:**
+
 ```json
 0.7853981633974483
 ```
 
 ## atan2
 
-Returns the angle (in radians) between the positive x-axis and the point `(x, y)`. Correctly handles all quadrants and `x = 0` cases.
+Returns the angle (in radians) between the positive x-axis and the point `(x, y)`. Correctly handles all quadrants and
+`x = 0` cases.
 
 ```edgerules
 atan2(1, 1)
 ```
 
 **output:**
+
 ```json
 0.7853981633974483
 ```
