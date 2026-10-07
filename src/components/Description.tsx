@@ -25,8 +25,11 @@ const mapCodeSegments = (text: string, keyPrefix: string): React.ReactNode[] => 
     ))
 }
 
+// Cross-document links point at other Markdown files, not pages of this app — keep the link text only
+const stripLinks = (text: string): string => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+
 const parseMarkdown = (text: string, keyPrefix: string): React.ReactNode[] => {
-    const boldNodes = mapBoldSegments(text, keyPrefix)
+    const boldNodes = mapBoldSegments(stripLinks(text), keyPrefix)
     return boldNodes.flatMap((node, idx) => {
         if (typeof node === 'string') {
             return mapCodeSegments(node, `${keyPrefix}-s${idx}`)

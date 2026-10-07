@@ -375,6 +375,7 @@ arguments, never fetched.
 ```edgerules
 {
     holidays: [date("2026-06-12")]
+    weekend: isWeekend(date("2026-06-13"))
     open: isBusinessDay(date("2026-06-12"), holidays)
     working: businessDaysBetween(date("2026-06-08"), date("2026-06-14"), holidays)
     due: addBusinessDays(date("2026-06-11"), 1, holidays)
@@ -387,6 +388,7 @@ arguments, never fetched.
 ```json
 {
   "holidays": ["2026-06-12"],
+  "weekend": true,
   "open": false,
   "working": 4,
   "due": "2026-06-15",

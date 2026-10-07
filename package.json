@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "jest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:docs": "node scripts/check-docs.ts"
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",
@@ -17,10 +18,13 @@
     "@codemirror/language": "^6.12.3",
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.43.1",
+    "@edgerules/portable": "0.0.6-alpha.202607291629",
+    "@edgerules/web": "0.0.6-alpha.202607291629",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.1.1",
     "@mui/material": "^9.1.1",
+    "highs": "^1.15.3",
     "lz-string": "^1.5.0",
     "prismjs": "^1.30.0",
     "react": "^19.2.7",
@@ -28,6 +32,7 @@
     "react-simple-code-editor": "^0.14.1"
   },
   "devDependencies": {
+    "@edgerules/node": "0.0.6-alpha.202607291629",
     "@types/jest": "^30.0.0",
     "@types/lz-string": "^1.5.0",
     "@types/node": "^25.9.3",

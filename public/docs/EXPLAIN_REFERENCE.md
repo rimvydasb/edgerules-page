@@ -54,17 +54,18 @@ explain(value) → { status, type, value? | origin? }
 }
 ```
 
-## Explaining a decision-table miss
+## Explaining a ruleset miss
 
-When a table has no `default` and no rule matches, the result is a typed `Missing` whose origin `explain()` surfaces
-directly (see [DECISION_TABLES_REFERENCE.md](DECISION_TABLES_REFERENCE.md)):
+When a ruleset has no `default` and no rule matches, the result is a typed `Missing` whose origin `explain()`
+surfaces directly (see [RULESETS_REFERENCE.md](RULESETS_REFERENCE.md)):
 
 ```edgerules
 {
-    risk: firstMatch({
-        inputs: { age: 99 }
+    ruleset classify(age: number): {
+        hitPolicy: "first-match"
         rules: [ { when: { age: 18..25 }, then: { level: "high" } } ]
-    })
+    }
+    risk: classify(age: 99)
     why: explain(risk)
 }
 ```
@@ -113,6 +114,17 @@ is special, the last one is returned, so its metadata keeps propagating and `exp
 {
     salary: <number>                      // not provided in the request
     bonus: coalesce(salary * 0.1, 0)      // -> 0 instead of a propagated Missing
+    fallback: firstNonNull(salary, 1500)  // alias of coalesce
+}
+```
+
+**output:**
+
+```json
+{
+  "salary": "Missing('salary')",
+  "bonus": 0,
+  "fallback": 1500
 }
 ```
 

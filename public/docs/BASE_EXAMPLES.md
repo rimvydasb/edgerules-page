@@ -224,10 +224,7 @@ Inclusive integer ranges a..b; use in loops and built-ins.
 
 ```json
 {
-  "range": {
-    "start": 1,
-    "endExclusive": 6
-  },
+  "range": [1, 2, 3, 4, 5],
   "doubled": [2, 4, 6, 8, 10],
   "sumR": 15,
   "maxR": 5,
@@ -390,7 +387,7 @@ Operations may yield sentinel values like Missing/NotApplicable for certain situ
 
 ```json
 {
-  "idx": "Missing('N/A')",
-  "oob": "Missing('N/A')"
+  "idx": "Missing('value not found')",
+  "oob": "Missing('list index out of range')"
 }
 ```

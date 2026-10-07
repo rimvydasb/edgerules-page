@@ -1,2 +1,1 @@
 *.wasm binary -diff -merge
-public/pkg-web/* linguist-vendored

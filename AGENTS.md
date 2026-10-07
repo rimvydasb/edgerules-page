@@ -55,17 +55,17 @@ npm install       # install updated deps
   - Else falls back to the page title (or `Example n`).
 - Display: `src/App.tsx` loads the selected page, converts each `BaseExample` to an `Example` with
   `input`, then renders two editors per example: editable input (left) and read-only output (right).
-- Evaluate: When the WASM module is ready, `evaluateExpression` is used for a single non-empty line,
-otherwise `evaluateAll`. Errors are shown in the output panel.
+- Evaluate: `src/utils/evaluate.ts` runs `{ ... }` models as-is and wraps bare expressions as `{ result: <expr> }`.
+  Errors are shown in the output panel.
 Tip: To add a new example, edit the Markdown under `public/`. Use headings for titles and fenced code
 blocks (check the existing files for examples).
 
 ## WASM Integration
 
-- `index.html` loads the EdgeRules WASM (see `public/pkg-web/`).
-- On success it dispatches `window.dispatchEvent(new CustomEvent('edgerules-ready'))`.
-- `src/App.tsx` listens for `edgerules-ready` / `edgerules-error` and stores the module in a ref.
+- The engine is the `@edgerules/web` npm package, initialized in `src/utils/engine.ts` (`init()` +
+  `DecisionService.fromCode`). highs-js is lazy-loaded as solver for models with `optimise` elements.
 - All evaluation happens client-side in the browser.
+- `npm run check:docs` backtests all documented examples against `@edgerules/node`.
 
 ## Code Style
 

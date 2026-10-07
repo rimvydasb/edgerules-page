@@ -280,6 +280,27 @@ indexOf([1,2,3,2], 2)
 [2, 4]
 ```
 
+## find
+
+Returns the **0-based** index of the first matching element, or `Missing` when the value is absent. Unlike `indexOf`
+(every match, 1-based), `find` returns a single index for the first hit.
+
+```edgerules
+{
+    found: find([10, 20, 30], 30)
+    absent: find([10, 20, 30], 99)
+}
+```
+
+**output:**
+
+```json
+{
+  "found": 2,
+  "absent": "Missing('value not found')"
+}
+```
+
 ## union
 
 Combines lists without duplicates.
@@ -466,17 +487,25 @@ Same totality rules as the underlying aggregates: a `missing`/`invalid` field va
 are skipped, and an absent field is a typed `Missing`.
 
 ```edgerules
-sumBy([
-  { amount: 100 }
-  { amount: 500 }
-  { amount: 50 }
-], "amount")
+{
+    rows: [{ amount: 100 }, { amount: 500 }, { amount: 300 }]
+    total: sumBy(rows, "amount")
+    average: avgBy(rows, "amount")
+    lowest: minBy(rows, "amount")
+    highest: maxBy(rows, "amount")
+}
 ```
 
 **output:**
 
 ```json
-650
+{
+  "rows": [{"amount": 100}, {"amount": 500}, {"amount": 300}],
+  "total": 900,
+  "average": 300,
+  "lowest": 100,
+  "highest": 500
+}
 ```
 
 ## zip

@@ -9,6 +9,8 @@ import Description from './components/Description'
 import Playground from './components/Playground'
 import type {BaseExample, Example} from './examples/types'
 import {fetchAndParseBaseExamples, fetchMarkdown, formatWasmResult, parseBaseExamplesMarkdown} from './utils/parseBaseExamples'
+import {evaluateSource, type ServiceFactory} from './utils/evaluate'
+import {loadEngine} from './utils/engine'
 import {CONTENT_PAGES} from './content/pages'
 
 // Some bundlers/dep-optimizers double-wrap this package's CJS default export
@@ -20,7 +22,8 @@ export default function App() {
     const [lang] = useState<'javascript'>('javascript')
     const [wasmReady, setWasmReady] = useState(false)
     const [wasmError, setWasmError] = useState<string | null>(null)
-    const wasmRef = useRef<EdgeRulesMod | null>(null)
+    const wasmRef = useRef<ServiceFactory | null>(null)
+    const playgroundRunRef = useRef(0)
     const [examples, setExamples] = useState<Example[]>([])
     const [activeIndex, setActiveIndex] = useState<number>(0)
     const [playgroundInput, setPlaygroundInput] = useState<string>('')
@@ -60,92 +63,52 @@ export default function App() {
         }
     }, [])
 
-    // Access WASM module exposed via index.html module script as window.__edgeRules
+    // Initialize the EdgeRules WASM engine from the @edgerules/web package
     useEffect(() => {
         let cancelled = false
-
-        const attach = async (mod: EdgeRulesMod) => {
-            const ok = await mod.ready
-            if (!ok) throw new Error('EdgeRules WASM failed to initialize')
-            if (!cancelled) {
-                wasmRef.current = mod
-                setWasmReady(true)
-            }
-        }
-
-        const onReady = () => {
-            if (!cancelled && window.__edgeRules) {
-                attach(window.__edgeRules).catch((e: unknown) => setWasmError((e as Error)?.message || String(e)))
-            }
-        }
-        const onError = (e: CustomEvent<{ error?: Error }>) => {
-            if (!cancelled) setWasmError(e?.detail?.error?.message || 'WASM loader error')
-        }
-
-        if (window.__edgeRules) {
-            attach(window.__edgeRules).catch((e: unknown) => setWasmError((e as Error)?.message || String(e)))
-        } else {
-            window.addEventListener('edgerules-ready', onReady as EventListener, {once: true})
-            window.addEventListener('edgerules-error', onError as EventListener, {once: true})
-        }
-
+        loadEngine().then((factory) => {
+            if (cancelled) return
+            wasmRef.current = factory
+            setWasmReady(true)
+        }, (e: unknown) => {
+            if (!cancelled) setWasmError((e as Error)?.message || String(e))
+        })
         return () => {
             cancelled = true
-            window.removeEventListener('edgerules-ready', onReady as EventListener)
-            window.removeEventListener('edgerules-error', onError as EventListener)
         }
     }, [])
 
-    const evaluateWithMod = (mod: EdgeRulesMod, input: string): { output: string, isError: boolean } => {
-        const trimmed = input.trim()
-        if (trimmed.length === 0) {
+    const evaluateWithMod = async (
+        factory: ServiceFactory,
+        input: string,
+    ): Promise<{ output: string, isError: boolean }> => {
+        if (input.trim().length === 0) {
             return { output: '', isError: false }
         }
-
-        try {
-            const service = mod.DecisionServiceWASM.from_code(input)
-            const resultJson = service.execute('*')
-            service.free()
-            // resultJson is a JSON string — format it nicely
-            try {
-                const parsed = JSON.parse(resultJson)
-                return { output: formatWasmResult(parsed), isError: false }
-            } catch {
-                return { output: resultJson, isError: false }
-            }
-        } catch (err: unknown) {
-            if (typeof err === 'object' && err !== null && !(err instanceof Error)) {
-                const anyObj = err as any;
-                if (anyObj.stage === 'linking') {
-                    const errorObj = { ...anyObj };
-                    delete errorObj.message;
-                    return { output: formatWasmResult(errorObj), isError: true }
-                }
-                return { output: formatWasmResult(anyObj), isError: true }
-            }
-            return { output: formatWasmResult(err), isError: true }
-        }
+        const { value, isError } = await evaluateSource(factory, input)
+        return { output: formatWasmResult(value), isError }
     }
 
     // Helper to compute outputs for current examples
-    const computeOutputs = (items: Example[]): Example[] => {
-        const mod = wasmRef.current
-        if (!mod) return items
+    const computeOutputs = async (items: Example[]): Promise<Example[]> => {
+        const factory = wasmRef.current
+        if (!factory) return items
 
-        return items.map((ex): Example => {
-            if (ex.input.trim().length === 0) {
-                return { ...ex, output: '', isError: false }
-            }
-            const { output, isError } = evaluateWithMod(mod, ex.input)
+        return Promise.all(items.map(async (ex): Promise<Example> => {
+            const { output, isError } = await evaluateWithMod(factory, ex.input)
             return { ...ex, output, isError }
-        })
+        }))
     }
 
-    // Recompute outputs when WASM becomes ready
-    useEffect(() => {
-        if (!wasmReady || !wasmRef.current) return
-        setExamples(prev => computeOutputs(prev))
-    }, [wasmReady])
+    // Applies evaluated outputs, skipping examples whose input changed while evaluation was running
+    const applyOutputs = (evaluated: Example[]) => {
+        setExamples(prev => prev.map((ex, idx) => {
+            const next = evaluated[idx]
+            return next && next.id === ex.id && next.input === ex.input
+                ? { ...ex, output: next.output, isError: next.isError }
+                : ex
+        }))
+    }
 
     // Load selected page markdown and seed examples; recompute when WASM ready
     useEffect(() => {
@@ -169,12 +132,10 @@ export default function App() {
                     output: '',
                     isError: false,
                 }))
-                if (!cancelled) {
-                    setExamples(() => {
-                        const next = ex
-                        return wasmRef.current ? computeOutputs(next) : next
-                    })
-                }
+                if (cancelled) return
+                setExamples(ex)
+                const evaluated = await computeOutputs(ex)
+                if (!cancelled) applyOutputs(evaluated)
             } catch {
                 if (!cancelled) setExamples([])
             }
@@ -187,35 +148,29 @@ export default function App() {
     }, [activeItem, wasmReady])
 
     const onChangeExample = (id: string, value: string) => {
-        const mod = wasmRef.current
-        if (!mod) {
-            setExamples(prev => prev.map(ex => ex.id === id ? {...ex, input: value} : ex))
-            return
-        }
+        setExamples(prev => prev.map(ex => ex.id === id ? {...ex, input: value} : ex))
+        const factory = wasmRef.current
+        if (!factory) return
 
-        setExamples(prev => prev.map(ex => {
-            if (ex.id !== id) return ex
-            const next: Example = { ...ex, input: value }
-            if (value.trim().length === 0) {
-                return { ...next, output: '', isError: false }
-            }
-            const { output, isError } = evaluateWithMod(mod, value)
-            return { ...next, output, isError }
-        }))
+        void evaluateWithMod(factory, value).then(({ output, isError }) => {
+            setExamples(prev => prev.map(ex => ex.id === id && ex.input === value ? { ...ex, output, isError } : ex))
+        })
     }
 
-    const evaluatePlaygroundInput = (value: string) => {
-        const mod = wasmRef.current
-        if (!mod) return
+    const evaluatePlaygroundInput = async (value: string) => {
+        const factory = wasmRef.current
+        if (!factory) return
 
-        const { output, isError } = evaluateWithMod(mod, value)
+        const run = ++playgroundRunRef.current
+        const { output, isError } = await evaluateWithMod(factory, value)
+        if (run !== playgroundRunRef.current) return
         setPlaygroundOutput(output)
         setPlaygroundError(isError ? output : null)
     }
 
     const onChangePlayground = (value: string) => {
         setPlaygroundInput(value)
-        evaluatePlaygroundInput(value)
+        void evaluatePlaygroundInput(value)
     }
 
     useEffect(() => {
@@ -244,15 +199,8 @@ export default function App() {
                     return
                 }
 
-                const mod = wasmRef.current
-                if (!mod) {
-                    setPlaygroundError(null)
-                    return
-                }
-
-                const { output, isError } = evaluateWithMod(mod, nextValue)
-                setPlaygroundOutput(output)
-                setPlaygroundError(isError ? output : null)
+                setPlaygroundError(null)
+                await evaluatePlaygroundInput(nextValue)
             } catch (err) {
                 if (cancelled) return
                 const message = (err as Error)?.message ?? String(err)
@@ -275,7 +223,7 @@ export default function App() {
 
     useEffect(() => {
         if (!isPlayground || !wasmReady) return
-        evaluatePlaygroundInput(playgroundInput)
+        void evaluatePlaygroundInput(playgroundInput)
     }, [isPlayground, wasmReady])
 
     return (
