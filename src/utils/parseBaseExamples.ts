@@ -314,7 +314,12 @@ export interface PlaygroundContentMenuItem {
     type: 'playground';
 }
 
-export type ContentMenuItem = MarkdownContentMenuItem | PlaygroundContentMenuItem;
+export interface IndexContentMenuItem {
+    menuTitle: string;
+    type: 'index';
+}
+
+export type ContentMenuItem = MarkdownContentMenuItem | PlaygroundContentMenuItem | IndexContentMenuItem;
 
 export function isMarkdownContentMenuItem(item: ContentMenuItem): item is MarkdownContentMenuItem {
     return (item as MarkdownContentMenuItem).contentReference !== undefined;

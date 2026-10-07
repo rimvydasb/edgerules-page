@@ -1,6 +1,7 @@
 import type { ContentMenuItem } from '../utils/parseBaseExamples'
 
 export const CONTENT_PAGES: ContentMenuItem[] = [
+    { menuTitle: '# Index', type: 'index' },
     { menuTitle: '# Basics', contentReference: 'docs/BASE_EXAMPLES.md' },
     { menuTitle: '# Lists', contentReference: 'docs/LIST_FUNCTIONS_REFERENCE.md' },
     { menuTitle: '# Numbers', contentReference: 'docs/NUMERIC_FUNCTIONS_REFERENCE.md' },
@@ -16,3 +17,14 @@ export const CONTENT_PAGES: ContentMenuItem[] = [
     { menuTitle: '# Optimise Examples', contentReference: 'docs/OPTIMISE_EXAMPLES.md' },
     { menuTitle: '# Playground', type: 'playground' },
 ]
+
+/** URL hash slug of a menu item: `# User Types` → `user-types`. */
+export function pageSlug(item: ContentMenuItem): string {
+    return item.menuTitle.replace(/^#\s*/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+}
+
+/** Index of the page addressed by a URL hash (`#basics`), or -1 when none matches. */
+export function pageIndexFromHash(hash: string): number {
+    const slug = hash.replace(/^#/, '').toLowerCase()
+    return CONTENT_PAGES.findIndex((item) => pageSlug(item) === slug)
+}

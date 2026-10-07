@@ -26,7 +26,10 @@ via the EdgeRules WebAssembly module. Deployed to GitHub Pages: https://rimvydas
 ### Markdown-driven content pipeline
 
 - `src/content/pages.ts`: menu definition — each entry is either a content page (`contentReference` →
-  a path under `public/`) or the special `{ type: 'playground' }` entry.
+  a path under `public/`) or one of the special `{ type: 'index' }` / `{ type: 'playground' }` entries.
+  Pages are addressed by URL hash slugs derived from `menuTitle` (`# User Types` → `#user-types`); menu and
+  in-page links are plain `#slug` anchors, and `App.tsx` follows `hashchange`. With no hash the front page
+  (`#index`) opens, unless a shared `?h=` playground link is present.
 - `src/utils/parseBaseExamples.ts`:
   - `fetchMarkdown` — loads a markdown file, respecting the Vite base URL via `getBaseUrl()` (works in
     dev and on GitHub Pages).
@@ -41,6 +44,14 @@ via the EdgeRules WebAssembly module. Deployed to GitHub Pages: https://rimvydas
   `isError` for the editable/evaluated state).
 - To add a new example: edit the relevant Markdown file under `public/docs/`; no rebuild needed in dev.
   To add a new page: create the Markdown file and register it in `src/content/pages.ts`.
+
+### Front page (`#index`)
+
+- `src/components/FrontPage.tsx` renders the landing page; its copy and examples live in `src/content/frontPage.ts`
+  (adapted from the core repo README, up to "Built-in Function Library").
+- The Introduction example is not duplicated: it is the first code block of `public/docs/BASE_EXAMPLES.md`.
+- `src/components/LiveExample.tsx` is a self-contained editable input ↦ evaluated output pair used by the front page;
+  `src/components/CodeEditor.tsx` holds the shared editor component, style, and Prism highlighter.
 
 ### App shell and evaluation flow (`src/App.tsx`)
 

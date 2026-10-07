@@ -28,7 +28,7 @@ const mapCodeSegments = (text: string, keyPrefix: string): React.ReactNode[] => 
 // Cross-document links point at other Markdown files, not pages of this app — keep the link text only
 const stripLinks = (text: string): string => text.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
 
-const parseMarkdown = (text: string, keyPrefix: string): React.ReactNode[] => {
+export const renderInlineMarkdown = (text: string, keyPrefix: string): React.ReactNode[] => {
     const boldNodes = mapBoldSegments(stripLinks(text), keyPrefix)
     return boldNodes.flatMap((node, idx) => {
         if (typeof node === 'string') {
@@ -54,7 +54,7 @@ const renderDescriptionContent = (desc: string, keyPrefix: string): React.ReactN
             <div className="example-desc__paragraph" key={`${keyPrefix}-paragraph-${paragraphIdx}`}>
                 {lines.map((line, lineIdx) => (
                     <span className="example-desc__line" key={`${keyPrefix}-line-${paragraphIdx}-${lineIdx}`}>
-                        {parseMarkdown(line, `${keyPrefix}-${paragraphIdx}-${lineIdx}`)}
+                        {renderInlineMarkdown(line, `${keyPrefix}-${paragraphIdx}-${lineIdx}`)}
                     </span>
                 ))}
             </div>
