@@ -1,18 +1,17 @@
 # Introduction
 
-**EdgeRules** expression language helps you to define business rules and calculations.
-It is a simple, declarative, referentially transparent, and type-safe language with a small set of concepts that you can combine to express complex logic.
-Here are some interactive examples to get you started with JSON output.
+**EdgeRules** expression language helps you to define business rules and calculations. It is a simple, declarative,
+referentially transparent, and type-safe language with a small set of concepts that you can combine to express complex
+logic. Here are some interactive examples to get you started with JSON output.
 
-In the example below, we calculate the best 3-month sales period.
-You can edit the code and see the results immediately.
+In the example below, we calculate the best 3-month sales period. You can edit the code and see the results immediately.
 
 ```edgerules
 {
     sales: [10, 20, 8, 7, 1, 10, 6, 78, 0, 8, 0, 8]
     salesCount: count(sales)
-    func sales3(month, sales): { 
-        result: sales[month] + sales[month + 1] + sales[month + 2] 
+    func sales3(month, sales): {
+        result: sales[month] + sales[month + 1] + sales[month + 2]
     }
     acc: for m in 0..(salesCount - 3) return sales3(m, sales).result
     best: max(acc)
@@ -20,6 +19,7 @@ You can edit the code and see the results immediately.
 ```
 
 **output:**
+
 ```json
 {
   "sales": [10, 20, 8, 7, 1, 10, 6, 78, 0, 8, 0, 8],
@@ -31,7 +31,7 @@ You can edit the code and see the results immediately.
 
 ## Arithmetic
 
-Integers and reals with +, -, *, /, ^ and unary -.
+Integers and reals with +, -, \*, /, ^ and unary -.
 
 ```edgerules
 {
@@ -45,6 +45,7 @@ Integers and reals with +, -, *, /, ^ and unary -.
 ```
 
 **output:**
+
 ```json
 {
   "summing": 5.2,
@@ -59,6 +60,7 @@ Integers and reals with +, -, *, /, ^ and unary -.
 ## Comparisons
 
 Numeric comparisons: <, <=, >, >=, =, <>.',
+
 ```edgerules
 {
     lower: 1 < 2
@@ -71,6 +73,7 @@ Numeric comparisons: <, <=, >, >=, =, <>.',
 ```
 
 **output:**
+
 ```json
 {
   "lower": true,
@@ -98,6 +101,7 @@ Booleans true/false and logical operators not/and/or/xor.
 ```
 
 **output:**
+
 ```json
 {
   "a": true,
@@ -110,6 +114,7 @@ Booleans true/false and logical operators not/and/or/xor.
 ```
 
 ## Strings
+
 Single or double quotes. Compare with = and <>.
 
 ```edgerules
@@ -122,6 +127,7 @@ Single or double quotes. Compare with = and <>.
 ```
 
 **output:**
+
 ```json
 {
   "a": "hello",
@@ -148,6 +154,7 @@ Indexing, filtering, and numeric built-ins sum/max/count; find returns index or 
 ```
 
 **output:**
+
 ```json
 {
   "nums": [1, 5, 12, 7],
@@ -162,8 +169,8 @@ Indexing, filtering, and numeric built-ins sum/max/count; find returns index or 
 
 ## Filters
 
-Filters are defined within brackets [...] after a list where ... represents each item.
-Object fields can be accessed with dot notation.
+Filters are defined within brackets [...] after a list where ... represents each item. Object fields can be accessed
+with dot notation.
 
 ```edgerules
 {
@@ -177,29 +184,13 @@ Object fields can be accessed with dot notation.
 ```
 
 **output:**
+
 ```json
 {
-  "vals": [
-    10,
-    15,
-    20,
-    25,
-    30
-  ],
-  "over20": [
-    25,
-    30
-  ],
-  "below20": [
-    10,
-    15,
-    20
-  ],
-  "between": [
-    15,
-    20,
-    25
-  ],
+  "vals": [10, 15, 20, 25, 30],
+  "over20": [25, 30],
+  "below20": [10, 15, 20],
+  "between": [15, 20, 25],
   "complex": [
     {
       "a": 2
@@ -230,19 +221,14 @@ Inclusive integer ranges a..b; use in loops and built-ins.
 ```
 
 **output:**
+
 ```json
 {
   "range": {
     "start": 1,
     "endExclusive": 6
   },
-  "doubled": [
-    2,
-    4,
-    6,
-    8,
-    10
-  ],
+  "doubled": [2, 4, 6, 8, 10],
   "sumR": 15,
   "maxR": 5,
   "countR": 5
@@ -264,6 +250,7 @@ Named fields with references and nesting.
 ```
 
 **output:**
+
 ```json
 {
   "person": {
@@ -287,14 +274,14 @@ date("YYYY-MM-DD"), compare, add/sub durations, fields and helpers.
     beforeHalfDay: date("2017-03-31") - duration("PT12H")
     minusMonth: date("2017-03-31") - period("P1M")
     y: d1.year
-    mName: monthOfYear(d1)
-    wName: dayOfWeek(d1)
-    lastDom: lastDayOfMonth(date("2025-02-10"))
+    wNum: dayOfWeek(d1)
+    lastDom: daysInMonth(date("2025-02-10"))
     between: calendarDiff(date("1987-03-07"),d2)
 }
 ```
 
 **output:**
+
 ```json
 {
   "d1": "2017-05-03",
@@ -304,8 +291,7 @@ date("YYYY-MM-DD"), compare, add/sub durations, fields and helpers.
   "beforeHalfDay": "2017-03-30T12:00:00",
   "minusMonth": "2017-02-28",
   "y": 2017,
-  "mName": "May",
-  "wName": "Wednesday",
+  "wNum": 3,
   "lastDom": 28,
   "between": "P30Y1M27D"
 }
@@ -326,6 +312,7 @@ time("hh:mm:ss"), compare, +/- duration, and fields.
 ```
 
 **output:**
+
 ```json
 {
   "t1": "13:10:30",
@@ -352,6 +339,7 @@ datetime("YYYY-MM-DDThh:mm:ss"), compare, +/- duration, fields.
 ```
 
 **output:**
+
 ```json
 {
   "dt1": "2017-05-03T13:10:30",
@@ -377,6 +365,7 @@ duration("ISO-8601"). Years–months and days–time kinds; use with dates/times
 ```
 
 **output:**
+
 ```json
 {
   "ym": "P1D",
@@ -398,6 +387,7 @@ Operations may yield sentinel values like Missing/NotApplicable for certain situ
 ```
 
 **output:**
+
 ```json
 {
   "idx": "Missing('N/A')",

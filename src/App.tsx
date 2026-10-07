@@ -103,13 +103,20 @@ export default function App() {
         }
 
         try {
-            const result = mod.DecisionEngine.evaluate(input)
-            return { output: formatWasmResult(result), isError: false }
+            const service = mod.DecisionServiceWASM.from_code(input)
+            const resultJson = service.execute('*')
+            service.free()
+            // resultJson is a JSON string — format it nicely
+            try {
+                const parsed = JSON.parse(resultJson)
+                return { output: formatWasmResult(parsed), isError: false }
+            } catch {
+                return { output: resultJson, isError: false }
+            }
         } catch (err: unknown) {
             if (typeof err === 'object' && err !== null && !(err instanceof Error)) {
                 const anyObj = err as any;
                 if (anyObj.stage === 'linking') {
-                    // Create a shallow copy to avoid mutating the original error object if it's reused
                     const errorObj = { ...anyObj };
                     delete errorObj.message;
                     return { output: formatWasmResult(errorObj), isError: true }

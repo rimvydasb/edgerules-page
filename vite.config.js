@@ -7,8 +7,8 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig(() => {
     // Compute simple cache-busting tokens for public WASM/JS at startup
     const root = process.cwd()
-    const wasmPath = path.join(root, 'public', 'pkg-web', 'edge_rules_bg.wasm')
-    const jsPath = path.join(root, 'public', 'pkg-web', 'edge_rules.js')
+    const wasmPath = path.join(root, 'public', 'pkg-web-dev', 'edgerules_wasm_bg.wasm')
+    const jsPath = path.join(root, 'public', 'pkg-web-dev', 'edgerules_wasm.js')
 
     let wasmBust = ''
     let jsBust = ''
@@ -24,7 +24,7 @@ export default defineConfig(() => {
 
     return {
         plugins: [react()],
-        base: '/edgerules-page-legacy/',
+        base: '/edgerules-page/',
         define: {
             __ER_WASM_BUST__: JSON.stringify(wasmBust),
             __ER_JS_BUST__: JSON.stringify(jsBust),

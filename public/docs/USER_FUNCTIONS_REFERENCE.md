@@ -2,8 +2,8 @@
 
 ## Simple Functions
 
-User can define their own functions and use them in execution.
-If argument types are not specified, they will be inferred during runtime.
+User can define their own functions and use them in execution. If argument types are not specified, they will be
+inferred during runtime.
 
 ```edgerules
 {
@@ -19,16 +19,8 @@ If argument types are not specified, they will be inferred during runtime.
 
 ```json
 {
-  "asNumbers": [
-    "1!",
-    "2!",
-    "3!"
-  ],
-  "asChars": [
-    "a!",
-    "b!",
-    "c!"
-  ]
+  "asNumbers": ["1!", "2!", "3!"],
+  "asChars": ["a!", "b!", "c!"]
 }
 ```
 
@@ -91,17 +83,16 @@ variables to be hidden.
 
 ## Functions as Enclosed Context
 
-Inside a function, it is possible to nest other functions and variables deeply.
-Functions cannot access variables from the outer scope - this makes
-each function an enclosed context that can be reused and reasoned about independently.
+Inside a function, it is possible to nest other functions and variables deeply. Functions cannot access variables from
+the outer scope - this makes each function an enclosed context that can be reused and reasoned about independently.
 
 ```edgerules
 {
-    type Customer: { 
-        name: <string>; 
-        income: <number>; 
-        expense: <number>; 
-        tags: <string[]> 
+    type Customer: {
+        name: <string>;
+        income: <number>;
+        expense: <number>;
+        tags: <string[]>
     }
     func customerDetails(customer: Customer): {
         self: customer
@@ -119,8 +110,8 @@ each function an enclosed context that can be reused and reasoned about independ
         }
     }
     detailedCustomer: customerDetails({
-        name: "Alice"; 
-        income: 1000; 
+        name: "Alice";
+        income: 1000;
         expense: 400;
         tags: ["vip", "premium"]
     })
@@ -136,10 +127,7 @@ each function an enclosed context that can be reused and reasoned about independ
       "name": "Alice",
       "income": 1000,
       "expense": 400,
-      "tags": [
-        "vip",
-        "premium"
-      ]
+      "tags": ["vip", "premium"]
     },
     "financialInformation": {
       "total": 1400,

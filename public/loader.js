@@ -9,18 +9,16 @@
         const jsBust = selfUrl.searchParams.get('js') || '';
         const wasmBust = selfUrl.searchParams.get('wasm') || '';
 
-        const mod = await import(`./pkg-web/edge_rules.js${jsBust ? `?v=${jsBust}` : ''}`);
+        const mod = await import(`./pkg-web-dev/edgerules_wasm.js${jsBust ? `?v=${jsBust}` : ''}`);
         const init = mod?.default;
-        if (typeof init !== 'function') throw new Error('edge_rules init not found');
+        if (typeof init !== 'function') throw new Error('edgerules_wasm init not found');
 
-        const wasmUrl = new URL(`./pkg-web/edge_rules_bg.wasm${wasmBust ? `?v=${wasmBust}` : ''}`, import.meta.url);
+        const wasmUrl = new URL(`./pkg-web-dev/edgerules_wasm_bg.wasm${wasmBust ? `?v=${wasmBust}` : ''}`, import.meta.url);
         await init(wasmUrl);
-        try { mod.init_panic_hook?.(); } catch {}
 
         const api = {
             ready: Promise.resolve(true),
-            init_panic_hook: mod.init_panic_hook,
-            DecisionEngine: mod.DecisionEngine
+            DecisionServiceWASM: mod.DecisionServiceWASM,
         };
 
         window.__edgeRules = api;

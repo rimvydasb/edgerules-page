@@ -20,18 +20,18 @@
     }
 
     // Applicant Level Decisions
-  
-    func applicantDecisions(applicant: Applicant, applicationRecord): {        
+
+    func applicantDecisions(applicant: Applicant, applicationRecord): {
 
          func CreditScore(age, income): {
             bins: [
                 {name: "AGE_BIN"; score: 20; condition: if age <= 25 then score else 0}
                 {name: "AGE_BIN"; score: 30; condition: if age > 25 then score else 0}
-                {name: "INC_BIN"; score: 30; condition: if income >= 1500 then score else 0}                
+                {name: "INC_BIN"; score: 30; condition: if income >= 1500 then score else 0}
             ]
             totalScore: sum(for bin in bins return bin.condition)
         }
-      
+
         func EligibilityDecision(applicantRecord, creditScore): {
             rules: [
                 {name: "INC_CHECK"; rule: applicantRecord.data.income > applicantRecord.data.expense * 2}
@@ -44,14 +44,14 @@
         }
 
         // Applicant Record
-  
+
         applicantRecord: {
             data: applicant
             age: calendarDiff(applicant.birthDate, applicationRecord.data.applicationDate.date).years
         }
-        
+
         // Applicant Decisions
-        
+
         creditScore: CreditScore(12,1000)
         eligibility: EligibilityDecision(applicantRecord, creditScore)
     }
@@ -61,13 +61,13 @@
     func applicationDecisions(application: Application): {
 
         // Application Record
-      
+
         applicationRecord: {
-            data: application            
+            data: application
         }
-        
+
         // Application Decisions
-        
+
         applicantDecisions: for app in application.applicants return applicantDecisions(app, applicationRecord)
         finalDecision: if (count(applicantDecisions[eligibility.status="INELIGIBLE"]) > 0) then "DECLINE" else "APPROVE"
     }
@@ -97,6 +97,7 @@
 ```
 
 **output:**
+
 ```json
 {
   "applicationResponse": {
@@ -171,9 +172,7 @@
               "rule": true
             }
           ],
-          "firedRules": [
-            "INC_CHECK"
-          ],
+          "firedRules": ["INC_CHECK"],
           "status": "INELIGIBLE"
         }
       },

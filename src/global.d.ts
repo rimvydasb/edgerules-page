@@ -1,10 +1,18 @@
 declare global {
+  interface DecisionServiceWASMInstance {
+    execute(method: string, args?: string | null): string
+    to_portable(): string
+    free(): void
+  }
+
+  interface DecisionServiceWASMStatic {
+    from_code(code: string): DecisionServiceWASMInstance
+    from_portable(json: string): DecisionServiceWASMInstance
+  }
+
   interface EdgeRulesMod {
     ready: Promise<boolean>
-    init_panic_hook: () => void
-    DecisionEngine: {
-      evaluate: (input: string | object, field?: string | null) => unknown
-    }
+    DecisionServiceWASM: DecisionServiceWASMStatic
   }
 
   interface Window {

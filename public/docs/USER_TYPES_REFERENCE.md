@@ -15,13 +15,10 @@ User can define their own types and use them for function variables.
 ```
 
 **output:**
+
 ```json
 {
-  "vals": [
-    2,
-    3,
-    4
-  ]
+  "vals": [2, 3, 4]
 }
 ```
 
@@ -31,8 +28,8 @@ Types can be nested and combined.
 
 ```edgerules
 {
-    type Person: { 
-        name: <string>; age: <number>; tags: <string[]> 
+    type Person: {
+        name: <string>; age: <number>; tags: <string[]>
     }
     type PeopleList: <Person[]>
     func getAdults(people: PeopleList): {
@@ -47,6 +44,7 @@ Types can be nested and combined.
 ```
 
 **output:**
+
 ```json
 {
   "adults": {
@@ -54,17 +52,12 @@ Types can be nested and combined.
       {
         "name": "Alice",
         "age": 30,
-        "tags": [
-          "engineer",
-          "manager"
-        ]
+        "tags": ["engineer", "manager"]
       },
       {
         "name": "Charlie",
         "age": 22,
-        "tags": [
-          "designer"
-        ]
+        "tags": ["designer"]
       }
     ]
   }
@@ -73,15 +66,15 @@ Types can be nested and combined.
 
 ## Argument Casting
 
-At runtime, complex objects are cast to the expected type when passed as function arguments.
-Casting is fault-tolerant and works in this way: fields that do not exist in the object definition are filtered out,
-and fields that exist in the definition, but not in the object, are set to Special Value.
-This approach brings predictable behavior and is fault-tolerant with unexpected data in production.
+At runtime, complex objects are cast to the expected type when passed as function arguments. Casting is fault-tolerant
+and works in this way: fields that do not exist in the object definition are filtered out, and fields that exist in the
+definition, but not in the object, are set to Special Value. This approach brings predictable behavior and is
+fault-tolerant with unexpected data in production.
 
 ```edgerules
 {
-    type Person: { 
-        name: <string>; age: <number>; tags: <string[]> 
+    type Person: {
+        name: <string>; age: <number>; tags: <string[]>
     }
     func checkPerson(person: Person): {
         checkedPerson: person
@@ -96,15 +89,14 @@ This approach brings predictable behavior and is fault-tolerant with unexpected 
 ```
 
 **output:**
+
 ```json
 {
   "result": {
     "checkedPerson": {
       "name": "Alice",
       "age": "Missing('age')",
-      "tags": [
-        "manager"
-      ]
+      "tags": ["manager"]
     },
     "isStudent": false,
     "isAdult": false
@@ -114,12 +106,12 @@ This approach brings predictable behavior and is fault-tolerant with unexpected 
 
 ## Explicit Casting
 
-During runtime, complex objects can be explicitly cast to the expected type using the `as` operator.
-Behavior is the same as with argument casting: fields that do not exist in the object definition are filtered out.
-And fields that exist in the definition, but not in the object, are set to Special Value.
-Use explicit casting when you want to ensure that the object conforms to the expected type.
-This method is fault-tolerant and will not throw errors on missing or extra fields.
-Casting will not convert field types - if the field type does not match the expected type, the execution will be terminated.
+During runtime, complex objects can be explicitly cast to the expected type using the `as` operator. Behavior is the
+same as with argument casting: fields that do not exist in the object definition are filtered out. And fields that exist
+in the definition, but not in the object, are set to Special Value. Use explicit casting when you want to ensure that
+the object conforms to the expected type. This method is fault-tolerant and will not throw errors on missing or extra
+fields. Casting will not convert field types - if the field type does not match the expected type, the execution will be
+terminated.
 
 ```edgerules
 {
@@ -129,6 +121,7 @@ Casting will not convert field types - if the field type does not match the expe
 ```
 
 **output:**
+
 ```json
 {
   "p": {
