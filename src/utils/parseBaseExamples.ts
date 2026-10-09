@@ -428,7 +428,7 @@ export function stringifyNoWrapLists(value: unknown, indent = 2): string {
             const body = keys
                 .map((k) => `${JSON.stringify(k)}: ${fmt(o[k], lvl + 1)}`)
                 .map((line) => pad(lvl + 1) + line)
-                .join('\n');
+                .join(',\n');
             return `{\n${body}\n${pad(lvl)}}`;
         }
 

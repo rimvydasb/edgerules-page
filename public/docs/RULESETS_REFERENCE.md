@@ -69,6 +69,22 @@ that already has call sites without simultaneously updating every call site:
 }
 ```
 
+**output:**
+
+```json
+{
+  "named": {
+    "total": 15
+  },
+  "positional": {
+    "total": 15
+  },
+  "explicit": {
+    "total": 11
+  }
+}
+```
+
 ## Body shape
 
 | Field       | Required | Meaning                                                                |
@@ -143,11 +159,6 @@ directly rather than through the implicit context variable:
 }
 ```
 
-This is equivalent to the cell-map form `when: { age: isCore }` from the named-unary-test example above. A ruleset's
-rows may freely mix both `when` forms. Any expression the language can already produce (comparisons, `and`/`or`,
-function calls, `if/then/else`, …) is valid here, as long as it evaluates to a boolean; anything else is a link-time
-type error, and unknown identifiers are an ordinary unresolved-reference error, same as in `then`/`default`.
-
 **output:**
 
 ```json
@@ -157,6 +168,11 @@ type error, and unknown identifiers are an ordinary unresolved-reference error, 
   }
 }
 ```
+
+This is equivalent to the cell-map form `when: { age: isCore }` from the named-unary-test example above. A ruleset's
+rows may freely mix both `when` forms. Any expression the language can already produce (comparisons, `and`/`or`,
+function calls, `if/then/else`, …) is valid here, as long as it evaluates to a boolean; anything else is a link-time
+type error, and unknown identifiers are an ordinary unresolved-reference error, same as in `then`/`default`.
 
 ## Semantics
 
@@ -201,12 +217,10 @@ the result structure is self-evident with nothing to guess:
 }
 ```
 
+**output:**
+
 ```json
 {
-  "status": "INELIGIBLE",
-  "failed": [
-    "income"
-  ],
   "applicant": {
     "age": 30,
     "income": 800,
@@ -225,7 +239,11 @@ the result structure is self-evident with nothing to guess:
       "name": "history",
       "passed": true
     }
-  ]
+  ],
+  "failed": [
+    "income"
+  ],
+  "status": "INELIGIBLE"
 }
 ```
 
