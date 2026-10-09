@@ -510,6 +510,40 @@ code {
     display: block;
 }
 
+.example-desc__table {
+    width: 100%;
+    margin: 4px 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 12px;
+    color: var(--text);
+}
+
+.example-desc__table th,
+.example-desc__table td {
+    padding: 6px 10px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+}
+
+.example-desc__table th {
+    background: var(--panel);
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.example-desc__table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.example-desc__table tbody tr:hover {
+    background: var(--panel);
+}
+
 .no-wrap {
     white-space: pre !important; /* keep lines intact */
     word-break: normal !important;
