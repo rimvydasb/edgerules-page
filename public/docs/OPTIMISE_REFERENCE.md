@@ -1,15 +1,8 @@
 # Optimise Reference
 
-Status: implemented and shipping on the WASM tier. Engine behaviour is implemented and tested natively through the
-external-call path; the browser/Node solver wiring (`registerSolver`, highs-js) is documented in
-[OPTIMISE_SOLVER_HOSTING.md](OPTIMISE_SOLVER_HOSTING.md); worked models with their outputs are in
-[OPTIMISE_EXAMPLES.md](OPTIMISE_EXAMPLES.md). Specification:
-[OPTIMISATION_METAPHOR_SPEC.md](../architecture/dsl/OPTIMISATION_METAPHOR_SPEC.md) (design background:
-[OPTIMISATION_METAPHOR_RESEARCH.md](../research/OPTIMISATION_METAPHOR_RESEARCH.md) — business context only).
-
 `optimise` is the fourth knowledge metaphor after `func`, `ruleset`, and `loop`: a named, callable **linear optimisation
 problem**. Rules compute the coefficients and gates; the solver picks the best feasible values for the declared decision
-variables. Grammar: [EBNF.md](../architecture/EBNF.md) § Optimise Definitions.
+variables.
 
 ## Element syntax
 
@@ -59,80 +52,7 @@ Section rules:
 element from any context is unrestricted. Parameters must be typed (E331); they are in scope by name inside the body,
 which is otherwise a closed membrane — enclosing values must be passed as parameters (E101).
 
-## The linear wall (E336–E339)
-
-The objective and both sides of every constraint must be **affine** in the decision variables: constants and parameters
-may appear anywhere; variables may only be scaled by constants and summed. Violations are rejected when the model links,
-with the location and the specific rule named:
-
-| Code | Rule                                                                                                                                         |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| E331 | every parameter must be typed                                                                                                                |
-| E332 | template shape (non-root declaration, malformed `variables`/`constraints` records)                                                           |
-| E333 | unknown `using` solver name                                                                                                                  |
-| E334 | `timeLimit` must be a positive integer literal                                                                                               |
-| E335 | a variable name collides with a reserved result field (`status`, `objective`, `bottlenecks`, `solver`, `notes`) or a parameter               |
-| E336 | not affine: `var * var`, a variable in a divisor, inside a function call, in an `if` condition, or an external/optimise call inside the body |
-| E337 | a constraint is not a `<=`/`>=`/`=` comparison over numbers                                                                                  |
-| E338 | `min > max` (empty domain)                                                                                                                   |
-| E339 | a declared variable is used in neither the objective nor any constraint                                                                      |
-
-E340–E342 are **runtime** solver diagnostics, not link errors — see "Infeasibility diagnostics" below. Variable-free
-subexpressions (`sqrt(workers)`, an `if` over parameters, any builtin over parameters) are fine anywhere — they fold to
-constants before the solve. An `if` whose _condition_ is variable-free may even select between affine branches over
-variables.
-
-## Execution model
-
-One engine rule: **if an in-process solver backend is registered, the call site solves inline; otherwise it evaluates to
-`Pending` and surfaces as a solver-call entry in the `PartialResult`.** WASM builds (and the current native W1 build)
-register no backend, so a demanded call site rides the same `Pending`/`PartialResult`/`resume` mechanism as
-`external func`:
-
-1. **Round 1** — the engine partial-evaluates the objective and constraints (parameters bound, variables symbolic) into
-   a solver-agnostic `LpProblem` IR and emits an entry with `type: "optimise"`, `name` = the declaration's own name,
-   `path` = the call site's correlation path, and `arguments` = the IR. The round completes; downstream fields
-   `Pending`-propagate.
-2. **Host solve** — the host (Phase W2: the TS wrapper via `registerSolver` + highs-js) turns the IR into a solve and
-   calls `resume` with the raw outcome: `{ status, objective?, values, duals?, violations?, solver? }`. The wrapper
-   fills in `duals` (the bottleneck re-solve), `violations` (the infeasibility diagnostic), and `solver` (the registered
-   identity) around the host's handler, so a handler only ever produces a plain solve.
-3. **Round 2** — the engine re-derives the affine form deterministically, **verifies** the injected solution
-   (feasibility and the reported objective, within tolerance), and produces the result record. A solution that fails
-   verification becomes `Invalid` — the engine never blesses a solution it cannot re-check. A negative resolution
-   (`missing: true`) becomes a typed `Missing`.
-
-Only a demanded call site triggers any of this; a model that merely declares `optimise` elements evaluates normally. The
-declaration also appears in the `get('*', 'EXTERNAL_DEFINITIONS')` catalog as a `@kind: "optimise"` row (parameters,
-variables with their bounds, constraint names, result type) so hosts can preload a solver at model-open time.
-
-## Editing a declaration through the Portable API
-
-`get('plan')` returns the authored declaration — the same `@kind: "optimise"` object `toPortable()` emits — and
-`set('plan', node)` writes it back; `remove` and `rename` work on the declaration name too. The declaration is edited as
-one node: its `@variables` / `@constraints` cells only mean anything together with the objective, so child paths like
-`plan.variables.value` are rejected. Change a bound by writing the whole declaration back with that cell replaced.
-Declarations are root-only, so the path is always a bare name.
-
 ## Result type
-
-Every `optimise` element gets a linker-synthesized result record — the user never writes it:
-
-```
-{
-    status: string            // "optimal" | "feasible" | "infeasible" | "unbounded"
-    objective: number         // Missing unless status is "optimal" or "feasible"
-    chairs: number            // one flat field per declared decision variable
-    tables: number
-    bottlenecks: {            // one field per named constraint
-        workerCapacity: number
-        stickSupply: number
-        plateSupply: number
-    }
-    solver: string            // who solved it, as the host registered it — "highs-js 1.15.1"
-    notes: string[]           // the caveats that qualify this outcome
-}
-```
 
 Status semantics:
 
@@ -145,7 +65,7 @@ Status semantics:
 `integer: true` variables are rounded to the nearest integer within tolerance (the 7.9999999-chairs guard) and
 re-verified after rounding; a genuinely fractional value is a verification failure, never silently rounded.
 
-### `solver` and `notes` — the explain surface
+## `solver` and `notes` — the explain surface
 
 The record is the API; these two fields are what a naive reading of the numbers would get wrong.
 
@@ -216,6 +136,29 @@ Read it with `explain()`:
   between them in several equally optimal ways — the reported split is one of them, the total is the invariant.
 - **Integrality is kept**, so the reported amounts are achievable in the model's units ("150 more units", not 149.7).
 
+## The linear wall (E336–E339)
+
+The objective and both sides of every constraint must be **affine** in the decision variables: constants and parameters
+may appear anywhere; variables may only be scaled by constants and summed. Violations are rejected when the model links,
+with the location and the specific rule named:
+
+| Code | Rule                                                                                                                                         |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| E331 | every parameter must be typed                                                                                                                |
+| E332 | template shape (non-root declaration, malformed `variables`/`constraints` records)                                                           |
+| E333 | unknown `using` solver name                                                                                                                  |
+| E334 | `timeLimit` must be a positive integer literal                                                                                               |
+| E335 | a variable name collides with a reserved result field (`status`, `objective`, `bottlenecks`, `solver`, `notes`) or a parameter               |
+| E336 | not affine: `var * var`, a variable in a divisor, inside a function call, in an `if` condition, or an external/optimise call inside the body |
+| E337 | a constraint is not a `<=`/`>=`/`=` comparison over numbers                                                                                  |
+| E338 | `min > max` (empty domain)                                                                                                                   |
+| E339 | a declared variable is used in neither the objective nor any constraint                                                                      |
+
+E340–E342 are **runtime** solver diagnostics, not link errors — see "Infeasibility diagnostics" below. Variable-free
+subexpressions (`sqrt(workers)`, an `if` over parameters, any builtin over parameters) are fine anywhere — they fold to
+constants before the solve. An `if` whose _condition_ is variable-free may even select between affine branches over
+variables.
+
 ## Bottleneck values
 
 For every named constraint, `bottlenecks.<name>` reports _how much the objective would improve per unit of relaxing that
@@ -244,16 +187,3 @@ Engine numbers are exact decimals; solvers speak f64. Coefficients cross that bo
 built, and results cross back once when the record is produced — verification therefore checks within defined tolerances
 (1e-6 feasibility/objective, 1e-5 integer rounding), never exact equality. The _objective value_ of a verified solution
 is stable across solver versions; the variable values of a degenerate problem need not be.
-
-## Hosting a solver
-
-Wiring a solver (highs-js) to `optimise` call sites through `@edgerules/node` / `@edgerules/web` — `registerSolver`, the
-`toCplexLp` / `mapHighsSolution` helpers, preloading via `requiresSolver`, the Web Worker pattern, and the host's
-orchestration duty for runaway/crashed solves — is documented in
-[OPTIMISE_SOLVER_HOSTING.md](OPTIMISE_SOLVER_HOSTING.md).
-
-## Worked examples
-
-[OPTIMISE_EXAMPLES.md](OPTIMISE_EXAMPLES.md) carries three complete models with their real outputs — factory production
-(integer mix against shared capacity), feed blending (continuous LP with meaningful bottleneck values), and order
-sourcing (a compliance rule gating what the solver may use, plus the infeasibility explanation).
