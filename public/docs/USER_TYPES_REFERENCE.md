@@ -105,6 +105,14 @@ Numeric validation metadata can be combined on the same input:
 }
 ```
 
+**output:**
+
+```json
+{
+  "age": "Missing('age')"
+}
+```
+
 Based on complex type definition, required metadata is also applied field by field:
 
 ```edgerules

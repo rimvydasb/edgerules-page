@@ -92,6 +92,16 @@ The lifted record is an ordinary value, so rules can branch on it:
 }
 ```
 
+**output:**
+
+```json
+{
+  "salary": "Missing('salary')",
+  "bonus": "Missing('salary')",
+  "safeBonus": 0
+}
+```
+
 ## Totality and link-time typing
 
 - The result type is a statically known record, so `explain(x).status` is link-checked — a typo like `explain(x).reason`
