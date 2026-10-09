@@ -6,7 +6,7 @@ identity, same typed parameters, same treatment at call sites — but its body i
 and it carries one extra data field: `hitPolicy`.
 
 | `hitPolicy`         | Semantics                                           | Result type            |
-| ------------------- | --------------------------------------------------- | ---------------------- |
+|---------------------|-----------------------------------------------------|------------------------|
 | `"first-match"`     | first matching rule wins (rows ordered)             | `R` (the `then` shape) |
 | `"unique-match"`    | exactly one rule may match; two matches → `Invalid` | `R`                    |
 | `"collect-matches"` | all matching rules, in row order                    | `R[]`                  |
@@ -51,10 +51,7 @@ and it carries one extra data field: `hitPolicy`.
 }
 ```
 
-Invocation is a plain (named- or positional-argument) function call — there is no decision-table special case at call
-sites, in the AST, or in the Portable JSON representation.
-
-### Parameter defaults
+## Parameter defaults
 
 A parameter may declare a default with the standard type-wrapper syntax; a call site that omits the argument (by name,
 or as a trailing positional argument) uses the default. This is what lets an editor add an input column to a ruleset
@@ -72,21 +69,18 @@ that already has call sites without simultaneously updating every call site:
 }
 ```
 
-In Portable JSON the same parameter is a `@kind: "type"` object: `{ "@kind": "type", "type": "number", "default": 5 }`.
-Function parameters accept the same defaults.
-
 ## Body shape
 
-| Field       | Required | Meaning                                                                      |
-| ----------- | -------- | ---------------------------------------------------------------------------- |
-| `hitPolicy` | yes      | `"first-match"` \| `"unique-match"` \| `"collect-matches"` \| `"best-match"` |
-| `rules`     | yes      | ordered list of rule rows                                                    |
-| `default`   | no       | fallback result; forbidden when `hitPolicy` is `"collect-matches"`           |
+| Field       | Required | Meaning                                                                |
+|-------------|----------|------------------------------------------------------------------------|
+| `hitPolicy` | yes      | `"first-match"`, `"unique-match"`, `"collect-matches"`, `"best-match"` |
+| `rules`     | yes      | ordered list of rule rows                                              |
+| `default`   | no       | fallback result; forbidden when `hitPolicy` is `"collect-matches"`     |
 
 Each rule row is `{ when?, then, priority?, name? }`:
 
 | Field      | Required        | Meaning                                                                                 |
-| ---------- | --------------- | --------------------------------------------------------------------------------------- |
+|------------|-----------------|-----------------------------------------------------------------------------------------|
 | `when`     | no              | map of `input-name → unary test`, or a single boolean expression; omitted = matches all |
 | `then`     | yes             | result record; must share one shape across all rows and `default`                       |
 | `priority` | best-match only | explicit integer priority (required there, rejected elsewhere)                          |
@@ -98,7 +92,7 @@ Every `when` cell is a [unary test](../architecture/EBNF.md#unary-tests) over th
 not a string. Cells always name declared parameters directly.
 
 | Cell                     | Meaning                                            |
-| ------------------------ | -------------------------------------------------- |
+|--------------------------|----------------------------------------------------|
 | `age: any`               | always matches (same as omitting the cell)         |
 | `age: 21`                | equality with the parameter                        |
 | `income: < 30000`        | comparison (`>`, `>=`, `<`, `<=`, `!=` likewise)   |
@@ -207,48 +201,32 @@ the result structure is self-evident with nothing to guess:
 }
 ```
 
-The two compose: a ruleset's parameter can be another ruleset's or plain expression's result.
-
-## Portable JSON
-
-A ruleset serializes to its own `@kind`, parallel to a function definition — every rule and cell is a field-addressable
-node, so a GUI/agent can edit one cell, add a rule, or change the hit policy without replacing an opaque blob:
-
 ```json
 {
-  "@kind": "ruleset",
-  "@parameters": {"age": "number", "income": "number", "segment": "string"},
-  "@hitPolicy": "first-match",
-  "@rules": [
-    {
-      "@kind": "rule",
-      "when": {"age": "18..25", "income": "< 30000", "segment": "retail"},
-      "then": {"level": "'high'", "limit": 1000}
-    }
+  "status": "INELIGIBLE",
+  "failed": [
+    "income"
   ],
-  "@default": {"level": "'none'", "limit": 0}
+  "applicant": {
+    "age": 30,
+    "income": 800,
+    "defaults": 0
+  },
+  "checks": [
+    {
+      "name": "age",
+      "passed": true
+    },
+    {
+      "name": "income",
+      "passed": false
+    },
+    {
+      "name": "history",
+      "passed": true
+    }
+  ]
 }
 ```
 
-- `set("risk.rules[2].then.limit", 2000)` — edit one output cell
-- `set("risk.rules[0].when.age", "21..30")` — edit one `when` cell; the string is a unary test (`"> 80"`, `"any"`,
-  `"\"retail\""`), desugared exactly like DSL cell source
-- `remove("risk.rules[0].when.age")` — clear a cell back to `any`
-- `remove("risk.default")` — drop the default row; `set("risk.default", …)` re-creates it
-- `set("risk.rules[3]", { "@kind": "rule", ... })` — add a rule
-- `set("risk", { "@kind": "ruleset", "@hitPolicy": "best-match", ... })` — change the hit policy (whole-ruleset replace)
-
-`get` resolves the same paths `set` accepts (`risk.rules`, `risk.rules[0]`, `risk.rules[0].when.age`,
-`risk.rules[0].then.limit`), and echoes `when` cells in the compact unary-test sugar they were authored in (`"18..25"`,
-not the desugared `"... >= 18 and ... <= 25"`). An output cell with no value is authored as the bare special-value
-string `"Missing"` or `"NotApplicable"` (the untyped form — it adopts the column's type from the other rows).
-
-A boolean-expression `when` serializes as an ordinary nested expression node (`@kind: "expression"`), same as any other
-non-trivial expression, rather than the flat cell-map object — the presence of `@kind` is what distinguishes it from a
-cell map on decode:
-
-```json
-{"@kind": "rule", "when": {"@kind": "expression", "expression": "age >= 26 and age <= 64"}, "then": {"name": "'core'"}}
-```
-
-A call to a ruleset is an ordinary `@kind: "invocation"` node — no decision-table special case.
+The two compose: a ruleset's parameter can be another ruleset's or plain expression's result.

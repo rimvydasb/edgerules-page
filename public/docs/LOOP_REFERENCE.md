@@ -303,6 +303,3 @@ The linker validates the whole loop before anything runs:
 
 A plain element-wise transform is not a loop's job — `for x in xs return ...` and list indexing already cover
 map/filter. Reach for `loop` when the computation is genuinely stateful: accumulation, early break, or convergence.
-
-For the full design rationale, Portable JSON shape, CRUD editing paths, and GUI rendering, see
-[LOOP_METAPHOR_SPEC.md](../architecture/dsl/LOOP_METAPHOR_SPEC.md).
