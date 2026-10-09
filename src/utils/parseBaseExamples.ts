@@ -284,6 +284,12 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
                 continue;
             }
 
+            // Table rows keep their own lines so the description renderer can rebuild the table
+            if (line.trim().startsWith('|')) {
+                current.addDescriptionLine(`\n${line.trim()}\n`);
+                continue;
+            }
+
             if (line.trim() === '' && current.hasContent()) {
                 current.addBlankParagraph();
                 continue;
