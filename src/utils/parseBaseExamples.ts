@@ -277,10 +277,11 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
             // starts with -
             const listMatch = line.match(/^\s*-\s+(.*)/);
             if (listMatch) {
-                // remove - and replace with bullet
+                // remove - and replace with bullet; the break goes before it so wrapped continuation lines
+                // stay in the same paragraph as their bullet
                 let trimmed = line.replace(/^\s*-\s+/, '• ');
-                current.addDescriptionLine(trimmed);
                 current.addBlankParagraph();
+                current.addDescriptionLine(trimmed);
                 continue;
             }
 
