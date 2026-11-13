@@ -36,11 +36,14 @@ Section rules:
   `integer` are ordinary wrapper keys usable on any typed input. The base type is always `number` (integrality
   constrains a value, it does not introduce a type). **An omitted `min`/`max` means unbounded in that direction** —
   never a silent `min: 0`.
+- **Indexed variables.** `<number[], ..., over: clients>` declares one decision variable per element of the list
+  parameter `clients` — see "Indexed variables and constraint families" below.
 - **`maximise` xor `minimise` (exactly one, required).** One section carries both the direction and the objective
   expression.
 - **`constraints` (optional).** A named record of comparison expressions; the names are the audit surface — bottleneck
   values and (W3) infeasibility explanations report per named constraint. Only `<=`, `>=`, and `=` are allowed; strict
   `<` / `>` are a link error (E337 — LP has no strict inequalities, and silently relaxing them would be a lie).
+  A constraint `for i in S return <comparison>` is a **family** of rows — see below.
 - **`using` (optional).** Data, not a keyword; an unknown solver name is a link error (E333). `"highs"` is the only v1
   value.
 - **`bottlenecks` (optional, boolean literal, default `false`).** Opt-in dual values — see below.
@@ -52,7 +55,64 @@ Section rules:
 element from any context is unrestricted. Parameters must be typed (E331); they are in scope by name inside the body,
 which is otherwise a closed membrane — enclosing values must be passed as parameters (E101).
 
+## Indexed variables and constraint families
+
+When the candidates come from data, the model cannot name one variable per candidate.
+
+- `<number[], ..., over: clients>` declares one decision variable per element of the list parameter `clients`, whatever
+  its element type (`Client[]`, `number[]`). `min`, `max`, and `integer` apply to each element. Read one element as
+  `call[i]`, sum them as `sum(for c in call return 30 * c)`, and use `count(clients)` for the length. One call site has
+  at most 4,096 decision variables, counting every element.
+- A constraint `for i in S return <comparison>` over a list `S` without decision variables is a **family**: one row
+  per element, named `callAllowed[0]`, `callAllowed[1]`, … in diagnostics.
+- A row without decision variables (a family element over a group with no candidates) is decided by the engine and
+  never reaches the solver. A row that holds (`0 <= 1`) has the bottleneck value 0. A false row (`0 >= 1`) makes the
+  result `"infeasible"` without a solver call; the E340 origin names the row.
+
+```edgerules
+{
+    type Client: { name: <string> }
+
+    optimise outreach(clients: Client[], callOk: number[], callValue: number[], teamMinutes: number): {
+        variables: {
+            call: <number[], integer: true, min: 0, max: 1, over: clients>
+        }
+        maximise: sum(for i in 0..(count(clients) - 1) return callValue[i] * call[i])
+        constraints: {
+            callAllowed: for i in 0..(count(clients) - 1) return call[i] <= callOk[i]
+            time:        sum(for c in call return 30 * c) <= teamMinutes
+        }
+    }
+
+    plan: outreach(
+        clients: [{ name: "Ann" }, { name: "Ben" }, { name: "Cid" }],
+        callOk: [1, 0, 1],
+        callValue: [50, 80, 30],
+        teamMinutes: 60
+    )
+    summary: {
+        status: plan.status
+        objective: plan.objective
+        call: plan.call
+    }
+}
+```
+
+**output (`summary`):**
+
+```json
+{
+  "status": "optimal",
+  "objective": 80,
+  "call": [1, 0, 1]
+}
+```
+
 ## Result type
+
+Every `optimise` element gets a linker-synthesized result record: `status`, `objective`, one field per declared decision
+variable (an indexed variable is a `number[]` in the order of its `over` list), `bottlenecks` with one field per named
+constraint (a family is a `number[]`, one value per row), `solver`, and `notes`.
 
 Status semantics:
 
@@ -62,10 +122,13 @@ Status semantics:
   `Missing`, and their origin is the E340/E341/E342 diagnosis below. Downstream rules branch on `status` without special
   cases.
 
+Without a solution an indexed variable field is `Missing(number[])`. An empty `over` list gives the field `[]`, and an
+empty family gives its bottleneck field `[]`.
+
 `integer: true` variables are rounded to the nearest integer within tolerance (the 7.9999999-chairs guard) and
 re-verified after rounding; a genuinely fractional value is a verification failure, never silently rounded.
 
-## `solver` and `notes` — the explain surface
+### `solver` and `notes` — the explain surface
 
 The record is the API; these two fields are what a naive reading of the numbers would get wrong.
 
@@ -145,16 +208,26 @@ with the location and the specific rule named:
 | Code | Rule                                                                                                                                         |
 | ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | E331 | every parameter must be typed                                                                                                                |
-| E332 | template shape (non-root declaration, malformed `variables`/`constraints` records)                                                           |
+| E332 | template shape (non-root declaration, malformed `variables`/`constraints` records); `<number[]>` without `over:`, `over:` without `<number[]>`, or `over:` not naming a list parameter |
 | E333 | unknown `using` solver name                                                                                                                  |
 | E334 | `timeLimit` must be a positive integer literal                                                                                               |
 | E335 | a variable name collides with a reserved result field (`status`, `objective`, `bottlenecks`, `solver`, `notes`) or a parameter               |
-| E336 | not affine: `var * var`, a variable in a divisor, inside a function call, in an `if` condition, or an external/optimise call inside the body |
-| E337 | a constraint is not a `<=`/`>=`/`=` comparison over numbers                                                                                  |
+| E336 | not affine: `var * var`, a variable in a divisor, inside a function call, in an `if` condition or a list index, an external/optimise call inside the body, or an unsupported list shape |
+| E337 | a constraint is not a `<=`/`>=`/`=` comparison over numbers, or a family that is nested or iterates a list of decision variables              |
 | E338 | `min > max` (empty domain)                                                                                                                   |
 | E339 | a declared variable is used in neither the objective nor any constraint                                                                      |
 
-E340–E342 are **runtime** solver diagnostics, not link errors — see "Infeasibility diagnostics" below. Variable-free
+Over an indexed variable, only these list shapes are linear: `call[i]` with an index free of decision variables,
+`for x in S return <affine>`, `for c in call return <affine>`, and `sum(...)` of either. These give E336 with a
+specific hint:
+
+| Shape           | Hint                                                     |
+| --------------- | -------------------------------------------------------- |
+| `count(call)`   | use `count(<over parameter>)`                            |
+| `call[... > 0]` | a predicate filter over decision variables is not affine |
+| `max(call)`     | only `sum` is linear over a list of decision variables   |
+
+E340–E342 are **runtime** solver diagnostics, not link errors — see "Infeasibility diagnostics" above. Variable-free
 subexpressions (`sqrt(workers)`, an `if` over parameters, any builtin over parameters) are fine anywhere — they fold to
 constants before the solve. An `if` whose _condition_ is variable-free may even select between affine branches over
 variables.
@@ -178,7 +251,7 @@ the objective; 0 means the constraint is not (marginally) the bottleneck.
   These same caveats arrive with the result, in `notes`. Richer what-if analysis is the model author's technique: call
   the element repeatedly with varied inputs and compare objectives.
 
-Both effects are shown against real solver output in [OPTIMISE_EXAMPLES.md](OPTIMISE_EXAMPLES.md) — the all-integer
+Both effects are shown against real solver output in [optimise-examples.md](optimise-examples.md) — the all-integer
 factory reports zeros, the continuous blending model prices its protein floor at 1.50 per kilogram.
 
 ## Exactness caveat

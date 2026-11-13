@@ -30,7 +30,7 @@ count([1,2,3])
 
 ## min
 
-Finds the smallest number.
+Finds the smallest element of a list of numbers, dates, times, date-times or strings. The result for an empty list is `Invalid` with the origin `min of an empty list`.
 
 ```edgerules
 min([1,2,3])
@@ -44,7 +44,7 @@ min([1,2,3])
 
 ## max
 
-Finds the largest number.
+Finds the largest element of a list of numbers, dates, times, date-times or strings. The result for an empty list is `Invalid` with the origin `max of an empty list`.
 
 ```edgerules
 max([1,2,3])

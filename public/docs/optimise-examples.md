@@ -3,12 +3,13 @@
 The first optimisation entries for the Modeler Examples Library. Each one shows the composition that motivates the
 `optimise` metaphor: **rules produce the numbers and the gates** — auditable, testable, versioned — and **the solver
 spends a scarce resource against them**. Element syntax and result semantics:
-[OPTIMISE_REFERENCE.md](OPTIMISE_REFERENCE.md); wiring a solver:
-[OPTIMISE_SOLVER_HOSTING.md](OPTIMISE_SOLVER_HOSTING.md).
+[optimise-reference.md](optimise-reference.md); wiring a solver:
+[optimise-solver-hosting.md](optimise-solver-hosting.md).
 
-All three models are **solver-preload tagged**: `service.requiresSolver()` returns `true`, which is the signal a host
+All four models are **solver-preload tagged**: `service.requiresSolver()` returns `true`, which is the signal a host
 reads at model-open time to load highs-js before the first `execute`. The models and every output below are executed
-against real highs-js by `tests/wasm/models/optimisation.test.ts` — that test is what keeps this document honest.
+against real highs-js by `tests/wasm/models/optimisation.test.ts` and `tests/wasm/models/client-outreach.test.ts` —
+those tests are what keep this document honest.
 
 ## 1. Factory production — spend a day of capacity
 
@@ -72,7 +73,7 @@ solver builds eight chairs and no tables.
 
 **Why every bottleneck is 0 here.** Both variables are integers, so the fixed-integer re-solve that prices constraints
 has no continuous structure left and every dual comes back 0 — the documented behaviour, matching FICO, Gurobi, and
-CPLEX (see [OPTIMISE_REFERENCE.md](OPTIMISE_REFERENCE.md) § Bottleneck values). The result's `notes` say so:
+CPLEX (see [optimise-reference.md](optimise-reference.md) § Bottleneck values). The result's `notes` say so:
 
 ```json
 [
@@ -272,4 +273,49 @@ above with `units: 250` and one field added:
 
 150 of the 250 units cannot be sourced: either the order shrinks, or a supplier's certification (or capacity) has to
 change. Every `Missing` field of the result carries the same explanation, so `explain()` on any of them answers the
-question. See [OPTIMISE_REFERENCE.md](OPTIMISE_REFERENCE.md) § Infeasibility diagnostics.
+question. See [optimise-reference.md](optimise-reference.md) § Infeasibility diagnostics.
+
+## 4. Budget allocation — one decision variable per list element
+
+The list of candidates comes from data, so the model cannot name a variable per candidate. An indexed variable
+declares one per element of a list parameter, and a constraint family writes one row per element.
+
+```edgerules
+{
+    optimise allocate(caps: number[], values: number[], budget: number): {
+        bottlenecks: true
+        variables: { amount: <number[], min: 0, over: caps> }
+        maximise: sum(for i in 0..(count(caps) - 1) return values[i] * amount[i])
+        constraints: {
+            capped: for i in 0..(count(caps) - 1) return amount[i] <= caps[i]
+            total: sum(for a in amount return a) <= budget
+        }
+    }
+    plan: allocate(caps: [4, 4, 4], values: [5, 3, 1], budget: 6)
+    summary: {
+        status: plan.status
+        objective: plan.objective
+        amount: plan.amount
+        bottlenecks: plan.bottlenecks
+    }
+}
+```
+
+**output (`summary`):**
+
+```json
+{
+  "status": "optimal",
+  "objective": 26,
+  "amount": [4, 2, 0],
+  "bottlenecks": { "capped": [2, 0, 0], "total": 3 }
+}
+```
+
+The budget of 6 goes to the best values first: 4 units at 5, then 2 units at 3. One more unit of budget is worth 3, the
+value of the second candidate. Lifting the first cap by one unit is worth 2: one unit moves from value 3 to value 5. On
+the wire the solver sees `amount[0]`, `amount[1]`, `amount[2]` and the rows `capped[0]`, `capped[1]`, `capped[2]`, and
+`total`. An infeasible family names its rows the same way in the E340 explanation.
+
+`tests/wasm/models/client-outreach.test.ts` solves the larger acceptance model: 100 clients, three binary channel
+variables per client (300 variables), and a `oneAction` family of one row per client.

@@ -79,9 +79,29 @@ const renderTable = (rows: string[], keyPrefix: string): React.ReactNode => {
     )
 }
 
+// A literal fenced block kept by the parser: ```lang\n...\n```
+const LITERAL_BLOCK = /```(\w*)\n([\s\S]*?)\n```/g
+
 const renderDescriptionContent = (desc: string, keyPrefix: string): React.ReactNode[] => {
     if (!desc) return []
 
+    const nodes: React.ReactNode[] = []
+    let last = 0
+    for (const match of desc.matchAll(LITERAL_BLOCK)) {
+        const idx = match.index ?? 0
+        nodes.push(...renderParagraphs(desc.slice(last, idx), `${keyPrefix}-${idx}`))
+        nodes.push(
+            <pre className="example-desc__literal" key={`${keyPrefix}-literal-${idx}`}>
+                <code>{match[2]}</code>
+            </pre>
+        )
+        last = idx + match[0].length
+    }
+    nodes.push(...renderParagraphs(desc.slice(last), `${keyPrefix}-${last}`))
+    return nodes
+}
+
+const renderParagraphs = (desc: string, keyPrefix: string): React.ReactNode[] => {
     const paragraphs = desc.split(/\n\n+/)
         .map((paragraph) => paragraph.trim())
         .filter((paragraph) => paragraph.length > 0)
@@ -105,6 +125,15 @@ const renderDescriptionContent = (desc: string, keyPrefix: string): React.ReactN
                 return
             }
             flushTable(lineIdx)
+            const subheading = line.match(/^#{3,}\s+(.+)/)
+            if (subheading?.[1]) {
+                nodes.push(
+                    <strong className="example-desc__subheading" key={`${keyPrefix}-sub-${paragraphIdx}-${lineIdx}`}>
+                        {renderInlineMarkdown(subheading[1], `${keyPrefix}-sub-${paragraphIdx}-${lineIdx}`)}
+                    </strong>
+                )
+                return
+            }
             nodes.push(
                 <span className="example-desc__line" key={`${keyPrefix}-line-${paragraphIdx}-${lineIdx}`}>
                     {renderInlineMarkdown(line, `${keyPrefix}-${paragraphIdx}-${lineIdx}`)}

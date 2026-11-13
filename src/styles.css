@@ -510,6 +510,33 @@ code {
     display: block;
 }
 
+.example-desc__subheading {
+    display: block;
+    margin: 4px 0 2px;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.example-desc__literal {
+    margin: 4px 0 8px;
+    padding: 8px 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 12px;
+    line-height: 1.45;
+    white-space: pre;
+}
+
+.example-desc__literal code {
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    font-size: inherit;
+}
+
 .example-desc__table {
     width: 100%;
     margin: 4px 0;

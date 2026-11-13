@@ -49,7 +49,7 @@ via the EdgeRules WebAssembly module. Deployed to GitHub Pages: https://rimvydas
 
 - `src/components/FrontPage.tsx` renders the landing page; its copy and examples live in `src/content/frontPage.ts`
   (adapted from the core repo README, up to "Built-in Function Library").
-- The Introduction example is not duplicated: it is the first code block of `public/docs/BASE_EXAMPLES.md`.
+- The Introduction example is not duplicated: it is the first code block of `public/docs/base-examples.md`.
 - `src/components/LiveExample.tsx` is a self-contained editable input ↦ evaluated output pair used by the front page;
   `src/components/CodeEditor.tsx` holds the shared editor component, style, and Prism highlighter.
 
@@ -61,7 +61,7 @@ via the EdgeRules WebAssembly module. Deployed to GitHub Pages: https://rimvydas
 - Evaluation: once the engine is loaded, every example is evaluated asynchronously via `evaluateSource`; results
   and errors are rendered via `formatWasmResult` in the output panel.
 - Playground tab (`type: 'playground'` page, `src/components/Playground.tsx`): seeded from
-  `public/docs/PLAYGROUND.md`'s first code block. Supports sharing state via the `?h=` URL query param,
+  `public/docs/playground.md`'s first code block. Supports sharing state via the `?h=` URL query param,
   compressed/decompressed with `lz-string` (`LZString.compressToEncodedURIComponent` /
   `decompressFromEncodedURIComponent`).
 
@@ -76,9 +76,13 @@ via the EdgeRules WebAssembly module. Deployed to GitHub Pages: https://rimvydas
   `{ result: <expr> }`, returning only `result` (same convention as the core repo's reference backtest).
   `execute` is async; thrown parse/link errors are normalized to `{ '@kind': 'error', type, message }`.
 - `vite.config.js` excludes `@edgerules/web` and `highs` from `optimizeDeps` so their `.wasm` files resolve.
-- Reference docs in `public/docs/` are copied from the core repo's `doc/reference/` (excluding `_REFERENCE.md` and
-  host-facing `OPTIMISE_SOLVER_HOSTING.md`). `npm run check:docs` backtests every example that has an
-  `**output:**` (or `**output (`field`):**`) block against `@edgerules/node` + highs-js.
+- Reference docs in `public/docs/` are copied from the core repo's `docs/reference/` (excluding `_reference.md`,
+  `annotations-story.md` and host-facing `optimise-solver-hosting.md`); file names are lowercase kebab-case. The page
+  copies keep their own edits (runnable `{ ... }` wrappers, extra `**output:**` blocks, no Portable JSON/host
+  sections), so merge core changes into them rather than overwriting. `npm run check:docs` backtests every example
+  that has an `**output:**` (or `**output (`field`):**`) block against `@edgerules/node` + highs-js.
+- Fences other than `edgerules` and output `json` (e.g. a `json` service input, `typescript`) render as preformatted
+  blocks in the description; `###` lines render as subheadings.
 
 ### Deployment
 
