@@ -51,7 +51,7 @@ and it carries one extra data field: `hitPolicy`.
 }
 ```
 
-## Parameter defaults
+### Parameter defaults
 
 A parameter may declare a default with the standard type-wrapper syntax; a call site that omits the argument (by name,
 or as a trailing positional argument) uses the default. This is what lets an editor add an input column to a ruleset
@@ -246,5 +246,3 @@ the result structure is self-evident with nothing to guess:
   "status": "INELIGIBLE"
 }
 ```
-
-The two compose: a ruleset's parameter can be another ruleset's or plain expression's result.

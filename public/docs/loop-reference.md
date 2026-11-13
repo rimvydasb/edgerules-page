@@ -299,7 +299,7 @@ The linker validates the whole loop before anything runs:
 - loops join the same acyclic call graph as `func`/`ruleset` — a loop can call another loop, but never itself, directly
   or transitively.
 
-## The Loop Is for Stateful Iteration
+## The Loop Is for Convergent and Divergent Iterations
 
 A plain element-wise transform is not a loop's job — `for x in xs return ...` and list indexing already cover
-map/filter. Reach for `loop` when the computation is genuinely stateful: accumulation, early break, or convergence.
+map/filter. Reach for `loop` when the computation is convergent or divergent: accumulation, early break, or convergence.
