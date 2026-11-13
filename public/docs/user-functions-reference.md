@@ -76,7 +76,7 @@ call site type-checks against the declared signature exactly like a call to an o
 return type flows into inference for any field that depends on the result.
 
 `external func` must be declared at the root of the model — a declaration nested inside a `{...}` field, `func`,
-`ruleset`, or `loop` body is a parse error. Names are therefore unique per model, and `get('*', 'EXTERNAL_DEFINITIONS')`
+`ruleset`, or `loop` body is a parse error. Names are therefore unique per model, and `get('*', ['external-method'])`
 is a single flat call listing every external function a host must be able to resolve. Call sites remain legal anywhere,
 nested or not.
 
@@ -129,18 +129,18 @@ propagation instead of staying `Pending` forever.
 A host that always resolves `fetchData` the same way does not need this manual loop at all: register a resolver once
 with `service.registerExternalFunction('fetchData', handler)` and every `execute`/`resume` call resolves it
 transparently, only surfacing a `PartialResult` for calls nobody registered a handler for. See
-[API_SPEC.md](../architecture/API_SPEC.md#host-registered-external-call-handlers-packages_core) for
-the full provider/event registry, [API_SPEC.md](../architecture/API_SPEC.md#execution-envelopes) for
+[api-spec.md](../architecture/api-spec.md#host-registered-external-call-handlers-packages_core) for
+the full provider/event registry, [api-spec.md](../architecture/api-spec.md#execution-envelopes) for
 the raw envelope contract, and
-[EXTERNAL_EXECUTIONS_SPEC.md](../architecture/EXTERNAL_EXECUTIONS_SPEC.md) for the full feature
+[external-executions-spec.md](../architecture/external-executions-spec.md) for the full feature
 specification and its design rationale.
 
 **The `optimise` metaphor rides this same mechanism.** A demanded `optimise` call site goes `Pending` and surfaces in
 the same ready frontier, as an entry with `type: "optimise"` carrying an LP/MILP problem instead of function arguments;
 the host resolves it with a solver rather than a function handler (`registerSolver`, not `registerExternalFunction` —
 routing is by `type` first, so the two never cross). Everything above about `Pending` propagation, partial resolution,
-negative resolutions, and the durable envelope applies unchanged. See [OPTIMISE_REFERENCE.md](OPTIMISE_REFERENCE.md) for
-the element, and [OPTIMISE_SOLVER_HOSTING.md](OPTIMISE_SOLVER_HOSTING.md) for the host side.
+negative resolutions, and the durable envelope applies unchanged. See [optimise-reference.md](optimise-reference.md) for
+the element, and [optimise-solver-hosting.md](optimise-solver-hosting.md) for the host side.
 
 ## Return Body Scoping
 

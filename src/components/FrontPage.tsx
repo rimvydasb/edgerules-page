@@ -71,7 +71,7 @@ export default function FrontPage({factory, wasmError}: FrontPageProps) {
     // The Introduction example is the first block of the Basics page — reuse it rather than duplicating it
     useEffect(() => {
         let cancelled = false
-        fetchAndParseBaseExamples('docs/BASE_EXAMPLES.md').then((examples) => {
+        fetchAndParseBaseExamples('docs/base-examples.md').then((examples) => {
             const first = examples.find((ex) => ex.codeExample.trim().length > 0)
             if (!cancelled && first) setIntro(first)
         }, () => {})
@@ -187,11 +187,11 @@ export default function FrontPage({factory, wasmError}: FrontPageProps) {
                             <code>service.set(path, node)</code> to write them. See{' '}
                             <a
                                 className="fp-link"
-                                href={`${GITHUB_URL}/blob/main/doc/architecture/API_SPEC.md`}
+                                href={`${GITHUB_URL}/blob/main/docs/architecture/api-spec.md`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                API_SPEC.md ↗
+                                api-spec.md ↗
                             </a>{' '}
                             for the full Portable Format reference.
                         </p>

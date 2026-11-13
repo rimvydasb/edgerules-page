@@ -2,8 +2,8 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { parseBaseExamplesMarkdown, ExampleBlock } from "../src/utils/parseBaseExamples";
 
-describe("BASE_EXAMPLES.md parsing (basic)", () => {
-    const mdPath = path.join(process.cwd(), "public", "docs/BASE_EXAMPLES.md");
+describe("base-examples.md parsing (basic)", () => {
+    const mdPath = path.join(process.cwd(), "public", "docs/base-examples.md");
     const markdown = fs.readFileSync(mdPath, "utf8");
     const blocks: ExampleBlock[] = parseBaseExamplesMarkdown(markdown);
 
@@ -65,5 +65,32 @@ This is a short description line.
         // call it and inspect output
         expect((b as any).getOutput()).toContain("This is output line 1");
         expect((b as any).getOutput()).toContain("This is output line 2");
+    });
+});
+
+describe("literal (non-example) fences", () => {
+    const markdown = [
+        "# Page",
+        "## Service",
+        "```edgerules",
+        "{ a: 1 }",
+        "```",
+        "",
+        "The host sends:",
+        "",
+        "```json",
+        "{",
+        "  \"x\": 1",
+        "}",
+        "```",
+    ].join("\n");
+    const blocks = parseBaseExamplesMarkdown(markdown);
+
+    test("keep their lines in the description of the following block", () => {
+        expect(blocks).toHaveLength(2);
+        expect(blocks[0]!.codeExample).toBe("{ a: 1 }");
+        expect(blocks[0]!.getOutput()).toBe("");
+        expect(blocks[1]!.codeExample).toBe("");
+        expect(blocks[1]!.description).toContain("```json\n{\n  \"x\": 1\n}\n```");
     });
 });

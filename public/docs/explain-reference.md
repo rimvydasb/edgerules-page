@@ -57,7 +57,7 @@ explain(value) → { status, type, value? | origin? }
 ## Explaining a ruleset miss
 
 When a ruleset has no `default` and no rule matches, the result is a typed `Missing` whose origin `explain()`
-surfaces directly (see [RULESETS_REFERENCE.md](RULESETS_REFERENCE.md)):
+surfaces directly (see [rulesets-reference.md](rulesets-reference.md)):
 
 ```edgerules
 {

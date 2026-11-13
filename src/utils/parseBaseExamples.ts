@@ -116,8 +116,10 @@ export class ExampleBlock {
     }
 }
 
+const FENCE = '```';
+
 /**
- * Parse BASE_EXAMPLES.md into structured blocks.
+ * Parse a reference markdown document into structured blocks.
  * A new block is created for each fenced code block, with context derived from the nearest preceding headings.
  */
 export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
@@ -130,6 +132,7 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
     let isOutputSection = false;
     let fenceLang: string | null = null;
     let pendingPush = false; // true when we've just closed an edgerules block and await possible output
+    let literalLines: string[] | null = null; // lines of an open non-example fence (`json` input, `typescript`, …)
 
     // Current block we're filling
     let current = ExampleBlock.createEmpty();
@@ -171,8 +174,21 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
                 // Opening fence
                 inCode = true;
                 fenceLang = lang;
-                // If this is a JSON fence and we are in an output section, treat it as output collection
-                // Otherwise if it's edgerules, we collect code. Other languages we'll treat as generic code (ignored by UI).
+                // If this is a JSON fence and we are in an output section, treat it as output collection.
+                // Otherwise if it's edgerules, we collect code. Any other fence is a literal block of the description.
+                if (lang !== 'edgerules' && !(lang === 'json' && isOutputSection)) {
+                    if (pendingPush) pushBlock();
+                    literalLines = [];
+                }
+                continue;
+            }
+
+            // Closing a literal (non-example) fence: keep it as a preformatted block of the description
+            if (literalLines !== null) {
+                current.addDescriptionLine(`\n\n${FENCE}${fenceLang ?? ''}\n${literalLines.join('\n')}\n${FENCE}\n\n`);
+                literalLines = null;
+                inCode = false;
+                fenceLang = null;
                 continue;
             }
 
@@ -261,13 +277,12 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
 
         if (inCode) {
             // Route code lines based on the active fence language
-            if (fenceLang === 'edgerules') {
+            if (literalLines !== null) {
+                literalLines.push(line);
+            } else if (fenceLang === 'edgerules') {
                 current.addCodeLine(line);
             } else if (fenceLang === 'json' && isOutputSection) {
                 current.addOutputLine(line);
-            } else {
-                // other fenced content - treat as description/code: append to description to be safe
-                current.addDescriptionLine(line);
             }
         } else {
             if (line.trim() === '' && !current.hasContent()) {
@@ -313,7 +328,7 @@ export function parseBaseExamplesMarkdown(markdown: string): ExampleBlock[] {
 export interface MarkdownContentMenuItem {
     menuTitle: string;
     type?: 'markdown';
-    contentReference: string; // relative path under public/, e.g., "BASE_EXAMPLES.md"
+    contentReference: string; // relative path under public/, e.g., "docs/base-examples.md"
 }
 
 export interface PlaygroundContentMenuItem {

@@ -7,7 +7,7 @@ out is negative, money you receive is positive, and rates are per-period fractio
 monthly). Domain errors (zero divisors, non-converging iterations) return `Invalid`, never a crash — inspect them with
 `explain(...)`.
 
-See also: `roundHalfUp`, `toFixed` and `between` in [NUMERIC_FUNCTIONS_REFERENCE.md](NUMERIC_FUNCTIONS_REFERENCE.md).
+See also: `roundHalfUp`, `toFixed` and `between` in [numeric-functions-reference.md](numeric-functions-reference.md).
 
 ## percentOf
 

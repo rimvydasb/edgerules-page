@@ -124,7 +124,7 @@ export default function Playground({ value, onChange, onReset, output, error, wa
         });
     };
 
-    const handleCloseSnackbar = (_event?: React.SyntheticEvent | Event, reason?: string) => {
+    const handleCloseSnackbar = (_event?: React.SyntheticEvent | Event | null, reason?: string) => {
         if (reason === 'clickaway') {
             return;
         }

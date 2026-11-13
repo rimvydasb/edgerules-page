@@ -51,7 +51,7 @@ and it carries one extra data field: `hitPolicy`.
 }
 ```
 
-## Parameter defaults
+### Parameter defaults
 
 A parameter may declare a default with the standard type-wrapper syntax; a call site that omits the argument (by name,
 or as a trailing positional argument) uses the default. This is what lets an editor add an input column to a ruleset
@@ -104,7 +104,7 @@ Each rule row is `{ when?, then, priority?, name? }`:
 
 ## Cells are unary tests
 
-Every `when` cell is a [unary test](../architecture/EBNF.md#unary-tests) over the named parameter — parsed, typed AST,
+Every `when` cell is a [unary test](../architecture/ebnf.md#unary-tests) over the named parameter — parsed, typed AST,
 not a string. Cells always name declared parameters directly.
 
 | Cell                     | Meaning                                            |
@@ -194,7 +194,7 @@ The linker validates the whole ruleset before anything runs:
 - every `when` key names a declared parameter; each cell test type-checks against that parameter's type; a
   boolean-expression `when` must itself type-check to a boolean;
 - all `then` results and `default` share one structural record shape (a shape-mismatch link error names the divergent
-  field);
+  field); a `Missing` value or an empty list `[]` in a result takes its type from the other rows;
 - `hitPolicy` is one of the four enum values;
 - `default` is rejected under `collect-matches`; `priority` is required under `best-match` and rejected otherwise;
 - `rules` is an inline literal list (v1).
@@ -246,5 +246,3 @@ the result structure is self-evident with nothing to guess:
   "status": "INELIGIBLE"
 }
 ```
-
-The two compose: a ruleset's parameter can be another ruleset's or plain expression's result.

@@ -186,12 +186,12 @@ export default function App() {
 
         const loadPlayground = async () => {
             try {
-                const markdown = await fetchMarkdown('docs/PLAYGROUND.md')
+                const markdown = await fetchMarkdown('docs/playground.md')
                 if (cancelled) return
                 const blocks = parseBaseExamplesMarkdown(markdown)
                 const firstBlock = blocks.find((block) => block.codeExample.trim().length > 0)
                 if (!firstBlock) {
-                    throw new Error('Playground example missing in PLAYGROUND.md')
+                    throw new Error('Playground example missing in playground.md')
                 }
                 const nextValue = firstBlock.codeExample
                 setPlaygroundInput(nextValue)
